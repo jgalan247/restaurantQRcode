@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receipt - La Hacienda</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+        .content {
+            background: #ffffff;
+            padding: 30px;
+            border: 1px solid #e5e7eb;
+            border-top: none;
+        }
+        .order-details {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        .order-details p {
+            margin: 5px 0;
+        }
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .items-table th {
+            background: #f3f4f6;
+            padding: 10px;
+            text-align: left;
+            font-weight: bold;
+            border-bottom: 2px solid #d1d5db;
+        }
+        .items-table td {
+            padding: 10px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .item-name {
+            font-weight: 500;
+        }
+        .item-modifiers {
+            font-size: 0.9em;
+            color: #6b7280;
+            margin-top: 3px;
+        }
+        .totals {
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 2px solid #d1d5db;
+        }
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+        }
+        .total-row.final {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #d97706;
+            padding-top: 15px;
+            border-top: 2px solid #d97706;
+            margin-top: 10px;
+        }
+        .footer {
+            text-align: center;
+            color: #6b7280;
+            margin-top: 30px;
+            padding: 20px;
+            border-top: 1px solid #e5e7eb;
+            font-size: 14px;
+        }
+        .thank-you {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: center;
+            font-weight: 500;
+            color: #92400e;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🌮 La Hacienda</h1>
+        <p style="margin: 5px 0; font-size: 16px;">Mexican Restaurant</p>
+        <p style="margin: 10px 0; font-size: 18px; font-weight: bold;">Order Receipt</p>
+    </div>
+
+    <div class="content">
+        <div class="order-details">
+            <p><strong>Order Number:</strong> {{ order_number }}</p>
+            <p><strong>Table:</strong> {{ table_number }}</p>
+            <p><strong>Date:</strong> {{ order_date }}</p>
+            <p><strong>Time:</strong> {{ order_time }}</p>
+        </div>
+
+        <h3 style="color: #d97706;">Order Items</h3>
+
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th style="text-align: center;">Qty</th>
+                    <th style="text-align: right;">Price</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>
+                        <div class="item-name">{{ item.name }}</div>
+                        {% if item.modifiers %}
+                        <div class="item-modifiers">{{ item.modifiers }}</div>
+                        {% endif %}
+                        {% if item.special_notes %}
+                        <div class="item-modifiers"><em>Note: {{ item.special_notes }}</em></div>
+                        {% endif %}
+                    </td>
+                    <td style="text-align: center;">{{ item.quantity }}</td>
+                    <td style="text-align: right;">${{ "%.2f"|format(item.total) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="totals">
+            <div class="total-row">
+                <span>Subtotal:</span>
+                <span>${{ "%.2f"|format(subtotal) }}</span>
+            </div>
+            <div class="total-row">
+                <span>GST (5%):</span>
+                <span>${{ "%.2f"|format(gst_amount) }}</span>
+            </div>
+            {% if tip_amount > 0 %}
+            <div class="total-row">
+                <span>Tip:</span>
+                <span>${{ "%.2f"|format(tip_amount) }}</span>
+            </div>
+            {% endif %}
+            <div class="total-row final">
+                <span>Total:</span>
+                <span>${{ "%.2f"|format(total_amount) }}</span>
+            </div>
+        </div>
+
+        <div class="thank-you">
+            ✨ Thank you for dining with us! ✨
+        </div>
+
+        {% if customer_notes %}
+        <div style="background: #f3f4f6; padding: 15px; border-radius: 6px; margin: 20px 0;">
+            <strong>Notes:</strong> {{ customer_notes }}
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="footer">
+        <p><strong>La Hacienda Mexican Restaurant</strong></p>
+        <p>Authentic Mexican Cuisine</p>
+        <p style="margin-top: 15px;">
+            We hope you enjoyed your meal!<br>
+            Please visit us again soon.
+        </p>
+        <p style="font-size: 12px; color: #9ca3af; margin-top: 20px;">
+            This is an automated email receipt for your records.
+        </p>
+    </div>
+</body>
+</html>
