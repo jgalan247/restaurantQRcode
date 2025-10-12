@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: lahacienda-db
+    environment:
+      POSTGRES_USER: lahacienda
+      POSTGRES_PASSWORD: password123
+      POSTGRES_DB: lahacienda
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lahacienda"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - lahacienda-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: lahacienda-api
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - ./backend:/app
+      - /app/__pycache__
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://lahacienda:password123@postgres:5432/lahacienda
+      SECRET_KEY: dev-secret-key-change-in-production-min-32-chars
+      CITYPAY_MERCHANT_ID: ${CITYPAY_MERCHANT_ID:-test_merchant}
+      CITYPAY_API_KEY: ${CITYPAY_API_KEY:-test_key}
+      MAIL_USERNAME: ${MAIL_USERNAME:-test@example.com}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-test_password}
+      MAIL_FROM: ${MAIL_FROM:-noreply@lahacienda.com}
+      MAIL_SERVER: ${MAIL_SERVER:-smtp.gmail.com}
+      FRONTEND_URL: http://localhost:5173
+      DEBUG: "True"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - lahacienda-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: lahacienda-web
+    command: npm run dev -- --host 0.0.0.0
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URL: http://localhost:8000/api/v1
+      VITE_APP_NAME: La Hacienda
+    depends_on:
+      - backend
+    networks:
+      - lahacienda-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  lahacienda-network:
+    driver: bridge
