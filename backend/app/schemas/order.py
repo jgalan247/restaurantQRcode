@@ -105,3 +105,59 @@ class SplitByItemsRequest(BaseModel):
         if not v:
             raise ValueError("At least one split is required")
         return v
+
+
+# Invoice Schemas
+class InvoiceItemDetail(BaseModel):
+    """Individual item on the invoice"""
+    name: str
+    quantity: int
+    unit_price: Decimal
+    modifiers: List[str] = Field(default_factory=list)
+    special_notes: Optional[str] = None
+    line_total: Decimal
+
+    class Config:
+        from_attributes = True
+
+
+class InvoiceRestaurantDetails(BaseModel):
+    """Restaurant information for invoice"""
+    name: str
+    address: str
+    phone: str
+    email: str
+    vat_number: Optional[str] = None
+
+
+class InvoiceResponse(BaseModel):
+    """Complete invoice data"""
+    # Restaurant details
+    restaurant: InvoiceRestaurantDetails
+
+    # Order information
+    order_number: str
+    invoice_number: str  # Same as order number or separate invoice ID
+    order_date: datetime
+    table_number: Optional[str] = None
+
+    # Customer info (if provided)
+    customer_name: Optional[str] = None
+    customer_email: Optional[str] = None
+
+    # Items
+    items: List[InvoiceItemDetail]
+
+    # Financial breakdown
+    subtotal: Decimal
+    vat_rate: float  # e.g., 0.05 for 5%
+    vat_amount: Decimal
+    tip_amount: Decimal
+    total_amount: Decimal
+
+    # Payment info
+    payment_method: Optional[str] = None
+    payment_status: str
+
+    class Config:
+        from_attributes = True

@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:15-alpine
@@ -12,49 +10,42 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./backend/scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U lahacienda"]
-      interval: 10s
+      interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
     networks:
       - lahacienda-network
 
   backend:
-    build:
+    build: 
       context: ./backend
       dockerfile: Dockerfile
     container_name: lahacienda-api
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     volumes:
       - ./backend:/app
-      - /app/__pycache__
     ports:
       - "8000:8000"
+    env_file:
+      - ./backend/.env
     environment:
-      DATABASE_URL: postgresql+asyncpg://lahacienda:password123@postgres:5432/lahacienda
-      SECRET_KEY: dev-secret-key-change-in-production-min-32-chars
-      CITYPAY_MERCHANT_ID: ${CITYPAY_MERCHANT_ID:-test_merchant}
-      CITYPAY_API_KEY: ${CITYPAY_API_KEY:-test_key}
-      MAIL_USERNAME: ${MAIL_USERNAME:-test@example.com}
-      MAIL_PASSWORD: ${MAIL_PASSWORD:-test_password}
-      MAIL_FROM: ${MAIL_FROM:-noreply@lahacienda.com}
-      MAIL_SERVER: ${MAIL_SERVER:-smtp.gmail.com}
-      FRONTEND_URL: http://localhost:5173
-      DEBUG: "True"
+      DATABASE_URL: postgresql+asyncpg://lahacienda:password123@lahacienda-db:5432/lahacienda
+      PYTHONPATH: /app
     depends_on:
       postgres:
         condition: service_healthy
     networks:
       - lahacienda-network
+    restart: on-failure
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: lahacienda-web
-    command: npm run dev -- --host 0.0.0.0
+    command: npm run dev -- --host
     volumes:
       - ./frontend:/app
       - /app/node_modules
@@ -62,16 +53,14 @@ services:
       - "5173:5173"
     environment:
       VITE_API_URL: http://localhost:8000/api/v1
-      VITE_APP_NAME: La Hacienda
     depends_on:
       - backend
     networks:
       - lahacienda-network
 
-volumes:
-  postgres_data:
-    driver: local
-
 networks:
   lahacienda-network:
     driver: bridge
+
+volumes:
+  postgres_data:

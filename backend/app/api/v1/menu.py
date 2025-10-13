@@ -6,7 +6,13 @@ from typing import List
 
 from app.api.deps import get_db
 from app.models.menu import Category, MenuItem
-from app.schemas.menu import CategoryResponse, MenuItemResponse
+from app.schemas.menu import (
+    CategoryResponse,
+    MenuItemResponse,
+    BudgetBuilderRequest,
+    BudgetBuilderResponse
+)
+from app.services.budget_builder import BudgetBuilderService
 
 router = APIRouter()
 
@@ -28,10 +34,13 @@ async def get_menu(db: AsyncSession = Depends(get_db)):
 
 @router.get("/categories", response_model=List[CategoryResponse])
 async def get_categories(db: AsyncSession = Depends(get_db)):
-    """Get all categories without items"""
+    """Get all categories with items"""
     result = await db.execute(
         select(Category)
         .where(Category.is_active == True)
+        .options(
+            selectinload(Category.menu_items).selectinload(MenuItem.modifiers)
+        )
         .order_by(Category.display_order)
     )
     categories = result.scalars().all()
@@ -66,3 +75,19 @@ async def get_menu_item(item_id: int, db: AsyncSession = Depends(get_db)):
     if not item:
         raise HTTPException(status_code=404, detail="Menu item not found")
     return item
+
+
+@router.post("/budget-builder", response_model=BudgetBuilderResponse)
+async def build_budget_meal(
+    request: BudgetBuilderRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    """Generate meal combinations within budget"""
+    service = BudgetBuilderService(db)
+    meal_combos, chef_combos = await service.generate_combinations(request)
+
+    return BudgetBuilderResponse(
+        budget=request.budget,
+        meal_combos=meal_combos,
+        chef_combos=chef_combos
+    )

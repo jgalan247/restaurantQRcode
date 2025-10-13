@@ -33,13 +33,21 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS Middleware
+# CORS Middleware - MUST be added BEFORE other middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins_list,
+    allow_origins=[
+        "http://localhost:5173",  # Frontend dev server
+        "http://localhost:3000",  # Alternative frontend port
+        "http://localhost:8000",
+        "http://127.0.0.1:5173",
+        "http://127.0.0.1:3000",
+        # Add production URLs when deploying
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],  # Expose all headers in responses
 )
 
 # Static files for QR codes

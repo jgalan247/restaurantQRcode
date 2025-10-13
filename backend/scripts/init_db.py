@@ -1,32 +1,28 @@
-"""
-Database initialization script
-Creates all tables in the database
-"""
 import asyncio
 import sys
 from pathlib import Path
 
 # Add parent directory to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.append(str(Path(__file__).parent.parent))
 
 from app.database import engine, Base
-from app.models import *  # Import all models
-
+from app.models.table import Table
+from app.models.menu import Category, MenuItem, ItemModifier
+from app.models.order import Order, OrderItem
+from app.models.payment import PaymentSplit
 
 async def init_db():
-    """Initialize database by creating all tables"""
+    """Create all database tables"""
     print("Creating database tables...")
-
+    
     async with engine.begin() as conn:
-        # Drop all tables (use with caution!)
+        # Drop all tables (careful - this deletes data!)
         # await conn.run_sync(Base.metadata.drop_all)
-
+        
         # Create all tables
         await conn.run_sync(Base.metadata.create_all)
-
+    
     print("✅ Database tables created successfully!")
-    await engine.dispose()
-
 
 if __name__ == "__main__":
     asyncio.run(init_db())

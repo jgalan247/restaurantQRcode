@@ -35,8 +35,15 @@ class Settings(BaseSettings):
 
     # Business Logic
     GST_RATE: float = 0.05  # 5%
-    CURRENCY: str = "USD"
+    CURRENCY: str = "GBP"
     FRONTEND_URL: str = "http://localhost:5173"
+
+    # Restaurant Details (for invoices)
+    RESTAURANT_NAME: str = "La Hacienda"
+    RESTAURANT_ADDRESS: str = "123 Mexican Street, London, UK, SW1A 1AA"
+    RESTAURANT_PHONE: str = "+44 20 1234 5678"
+    RESTAURANT_EMAIL: str = "info@lahacienda.co.uk"
+    RESTAURANT_VAT_NUMBER: str = "GB123456789"  # Optional, set empty string if not VAT registered
 
     model_config = SettingsConfigDict(
         env_file=".env",

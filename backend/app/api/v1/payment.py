@@ -8,13 +8,96 @@ import secrets
 from app.api.deps import get_db
 from app.schemas.order import SplitEqualRequest, SplitByItemsRequest, PaymentSplitResponse
 from app.services.payment_service import CityPayService
+from app.services.citypay_service import CityPayService as MockCityPayService
 from app.services.email_service import send_payment_link_email
 from app.models.payment import PaymentSplit
 from app.models.order import Order
 from app.config import get_settings
+from pydantic import BaseModel
 
 router = APIRouter()
 settings = get_settings()
+
+
+class MockPaymentRequest(BaseModel):
+    """Request model for mock payment (test mode only)"""
+    card_number: str
+    expiry_date: str
+    cvv: str
+    cardholder_name: str
+    tip_percentage: float = 0.0
+
+
+@router.post("/mock-single/{order_id}")
+async def mock_single_payment(
+    order_id: int,
+    payment_data: MockPaymentRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Mock single payment for testing (Test mode only)
+
+    This endpoint simulates a successful payment without actual payment processing.
+    Test mode: Marks order as 'paid' immediately after validation passes.
+    In production, use real CityPay integration with async payment confirmation.
+    """
+
+    # Get order
+    order = await db.get(Order, order_id)
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    # Validate card using mock validation
+    mock_citypay = MockCityPayService()
+    validation_result = mock_citypay.mock_validate_card(
+        card_number=payment_data.card_number,
+        expiry_date=payment_data.expiry_date,
+        cvv=payment_data.cvv
+    )
+
+    if not validation_result.get("valid"):
+        raise HTTPException(
+            status_code=400,
+            detail=validation_result.get("error", "Payment validation failed")
+        )
+
+    # Calculate tip and total
+    tip = order.subtotal * Decimal(str(payment_data.tip_percentage / 100))
+    total_with_tip = order.subtotal + order.gst_amount + tip
+
+    # Update order with tip and totals
+    order.tip_amount = tip
+    order.total_amount = total_with_tip
+
+    # Test mode: Mark as paid immediately after validation passes
+    # In production, status would be 'pending' until CityPay confirms
+    order.status = "paid"
+    order.completed_at = datetime.now()
+
+    # Create a payment split record for tracking
+    payment_split = PaymentSplit(
+        order_id=order_id,
+        split_token=secrets.token_urlsafe(32),
+        customer_name=payment_data.cardholder_name,
+        customer_email="",  # No email needed for mock payment
+        amount_to_pay=total_with_tip,
+        payment_status="completed",  # Test mode: mark as completed
+        payment_method="card_test",
+        paid_at=datetime.now()
+    )
+    db.add(payment_split)
+
+    await db.commit()
+    await db.refresh(order)
+
+    return {
+        "message": "Payment processed successfully (TEST MODE)",
+        "order_id": order.id,
+        "order_number": order.order_number,
+        "status": order.status,
+        "total_amount": float(total_with_tip),
+        "note": "Test mode: Order marked as paid immediately. In production, payment confirmation is async."
+    }
 
 
 @router.post("/split-equal/{order_id}")

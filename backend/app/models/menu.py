@@ -30,6 +30,17 @@ class MenuItem(Base):
     is_available = Column(Boolean, default=True)
     image_url = Column(Text)
     display_order = Column(Integer, default=0)
+
+    # Filter-related fields
+    spice_level = Column(String(20))  # 'mild', 'medium', 'hot', 'extra-hot'
+    is_lite_bite = Column(Boolean, default=False)
+    is_child_friendly = Column(Boolean, default=False)
+    is_salad = Column(Boolean, default=False)
+    is_deal = Column(Boolean, default=False)
+    is_gluten_free = Column(Boolean, default=False)
+    calories = Column(Integer)
+    allergens = Column(ARRAY(String(50)))  # ['nuts', 'dairy', 'gluten', etc.]
+
     created_at = Column(TIMESTAMP, server_default=func.now())
     updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
 
@@ -55,3 +66,49 @@ class ItemModifier(Base):
 
     # Relationships
     menu_item = relationship("MenuItem", back_populates="modifiers")
+
+
+class ChefCombo(Base):
+    __tablename__ = "chef_combos"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100), nullable=False)
+    description = Column(Text)
+    price = Column(Numeric(10, 2), nullable=False)
+    image_url = Column(Text)
+    is_active = Column(Boolean, default=True)
+    display_order = Column(Integer, default=0)
+    created_at = Column(TIMESTAMP, server_default=func.now())
+
+    # Relationships
+    items = relationship("ChefComboItem", back_populates="combo", cascade="all, delete-orphan")
+
+    __table_args__ = (
+        CheckConstraint("price >= 0", name="check_combo_price_positive"),
+    )
+
+
+class ChefComboItem(Base):
+    __tablename__ = "chef_combo_items"
+
+    id = Column(Integer, primary_key=True, index=True)
+    combo_id = Column(Integer, ForeignKey("chef_combos.id", ondelete="CASCADE"), nullable=False, index=True)
+    menu_item_id = Column(Integer, ForeignKey("menu_items.id", ondelete="CASCADE"), nullable=False, index=True)
+    quantity = Column(Integer, default=1)
+
+    # Relationships
+    combo = relationship("ChefCombo", back_populates="items")
+    menu_item = relationship("MenuItem")
+
+
+class BudgetBuilderLog(Base):
+    __tablename__ = "budget_builder_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    budget_amount = Column(Numeric(10, 2), nullable=False)
+    dietary_preferences = Column(ARRAY(String(50)))
+    meal_preferences = Column(ARRAY(String(50)))
+    combo_selected = Column(Integer)  # Index of combo selected (0-4)
+    upgrade_accepted = Column(Boolean, default=False)
+    upgrade_amount = Column(Numeric(10, 2))
+    created_at = Column(TIMESTAMP, server_default=func.now())

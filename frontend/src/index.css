@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply text-gray-900;
+    /* Background is handled by MexicanBackground component */
+  }
+}
+
+@layer components {
+  /* Button styles */
+  .btn-primary {
+    @apply bg-primary text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply bg-gray-200 text-gray-900 px-4 py-2 rounded-lg font-medium hover:bg-gray-300 transition-colors;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none;
+  }
+
+  /* Content containers with proper contrast */
+  .card {
+    @apply bg-white rounded-lg shadow-md p-4;
+  }
+
+  .content-container {
+    @apply bg-white/95 backdrop-blur-sm rounded-xl shadow-lg p-4 md:p-6;
+  }
+
+  .page-container {
+    @apply min-h-screen relative z-10;
+  }
+
+  .glass-panel {
+    @apply bg-white/90 backdrop-blur-md rounded-2xl shadow-xl border border-white/20;
+  }
+
+  .modal-overlay {
+    @apply bg-black/40 backdrop-blur-sm;
+  }
+
+  /* Ensure readability on gradient background */
+  .on-gradient-bg {
+    @apply bg-white/95 backdrop-blur-sm shadow-lg;
+  }
+}
