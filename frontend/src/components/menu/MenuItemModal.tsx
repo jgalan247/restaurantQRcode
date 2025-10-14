@@ -19,7 +19,18 @@ export function MenuItemModal({ item, isOpen, onClose }: MenuItemModalProps) {
   const [specialInstructions, setSpecialInstructions] = useState('');
   const [quantity, setQuantity] = useState(1);
 
+  // Wine variant selection state
+  const [selectedVariant, setSelectedVariant] = useState<string>('small_glass');
+  const [selectedVariantDisplay, setSelectedVariantDisplay] = useState<string>('Small Glass (125ml)');
+  const [selectedPrice, setSelectedPrice] = useState<number>(0);
+
   if (!item) return null;
+
+  // Initialize variant price when modal opens
+  if (item.has_variants && selectedPrice === 0) {
+    const initialPrice = parsePrice(item.price_small_glass || item.price);
+    setSelectedPrice(initialPrice);
+  }
 
   // Convert dietary_tags array to boolean flags
   const isVegetarian = item.dietary_tags.includes('vegetarian');
@@ -38,15 +49,31 @@ export function MenuItemModal({ item, isOpen, onClose }: MenuItemModalProps) {
     });
   };
 
+  const handleVariantChange = (variant: string, price: string | number | undefined, display: string) => {
+    setSelectedVariant(variant);
+    setSelectedVariantDisplay(display);
+    setSelectedPrice(parsePrice(price || item.price));
+  };
+
   const calculateTotal = () => {
-    const basePrice = parsePrice(item.price);
+    // Use selected variant price if item has variants, otherwise use base price
+    const basePrice = item.has_variants ? selectedPrice : parsePrice(item.price);
     const modifiersPrice = selectedModifiers.reduce((sum, mod) => sum + parsePrice(mod.price), 0);
     return (basePrice + modifiersPrice) * quantity;
   };
 
   const handleAddToCart = () => {
     for (let i = 0; i < quantity; i++) {
-      addItem(item, selectedModifiers, specialInstructions || undefined);
+      // Pass variant info for items with variants
+      if (item.has_variants) {
+        addItem(item, selectedModifiers, specialInstructions || undefined, {
+          variant: selectedVariant,
+          variantDisplay: selectedVariantDisplay,
+          selectedPrice: selectedPrice
+        });
+      } else {
+        addItem(item, selectedModifiers, specialInstructions || undefined);
+      }
     }
     toast.success(`Added ${quantity}x ${item.name} to cart`);
     handleClose();
@@ -56,6 +83,9 @@ export function MenuItemModal({ item, isOpen, onClose }: MenuItemModalProps) {
     setSelectedModifiers([]);
     setSpecialInstructions('');
     setQuantity(1);
+    setSelectedVariant('small_glass');
+    setSelectedVariantDisplay('Small Glass (125ml)');
+    setSelectedPrice(0);
     onClose();
   };
 
@@ -86,9 +116,92 @@ export function MenuItemModal({ item, isOpen, onClose }: MenuItemModalProps) {
 
         {item.description && <p className="text-gray-700">{item.description}</p>}
 
+        {/* Wine/Drink Variant Selection */}
+        {item.has_variants && (
+          <div className="border-t border-b border-gray-200 py-4">
+            <h3 className="font-semibold text-gray-900 mb-3">Customize your order</h3>
+            <div className="space-y-2">
+              {item.price_small_glass && (
+                <label
+                  className={`flex items-center justify-between p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                    selectedVariant === 'small_glass'
+                      ? 'border-primary bg-primary/5'
+                      : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                  }`}
+                >
+                  <div className="flex items-center flex-1">
+                    <input
+                      type="radio"
+                      name="variant"
+                      value="small_glass"
+                      checked={selectedVariant === 'small_glass'}
+                      onChange={() => handleVariantChange('small_glass', item.price_small_glass, 'Small Glass (125ml)')}
+                      className="mr-3 h-5 w-5 text-primary focus:ring-primary"
+                    />
+                    <span className="text-gray-900 font-medium">Small Glass (125ml)</span>
+                  </div>
+                  <span className="text-primary font-bold text-lg">
+                    {formatCurrency(item.price_small_glass)}
+                  </span>
+                </label>
+              )}
+
+              {item.price_large_glass && (
+                <label
+                  className={`flex items-center justify-between p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                    selectedVariant === 'large_glass'
+                      ? 'border-primary bg-primary/5'
+                      : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                  }`}
+                >
+                  <div className="flex items-center flex-1">
+                    <input
+                      type="radio"
+                      name="variant"
+                      value="large_glass"
+                      checked={selectedVariant === 'large_glass'}
+                      onChange={() => handleVariantChange('large_glass', item.price_large_glass, 'Large Glass (250ml)')}
+                      className="mr-3 h-5 w-5 text-primary focus:ring-primary"
+                    />
+                    <span className="text-gray-900 font-medium">Large Glass (250ml)</span>
+                  </div>
+                  <span className="text-primary font-bold text-lg">
+                    {formatCurrency(item.price_large_glass)}
+                  </span>
+                </label>
+              )}
+
+              {item.price_bottle && (
+                <label
+                  className={`flex items-center justify-between p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                    selectedVariant === 'bottle'
+                      ? 'border-primary bg-primary/5'
+                      : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                  }`}
+                >
+                  <div className="flex items-center flex-1">
+                    <input
+                      type="radio"
+                      name="variant"
+                      value="bottle"
+                      checked={selectedVariant === 'bottle'}
+                      onChange={() => handleVariantChange('bottle', item.price_bottle, 'Bottle (750ml)')}
+                      className="mr-3 h-5 w-5 text-primary focus:ring-primary"
+                    />
+                    <span className="text-gray-900 font-medium">Bottle (750ml)</span>
+                  </div>
+                  <span className="text-primary font-bold text-lg">
+                    {formatCurrency(item.price_bottle)}
+                  </span>
+                </label>
+              )}
+            </div>
+          </div>
+        )}
+
         {item.modifiers && item.modifiers.length > 0 && (
           <div>
-            <h3 className="font-semibold text-gray-900 mb-2">Customize your order</h3>
+            <h3 className="font-semibold text-gray-900 mb-2">Add extras</h3>
             <div className="space-y-2">
               {item.modifiers.map((modifier) => (
                 <label

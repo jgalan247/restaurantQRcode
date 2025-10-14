@@ -14,6 +14,8 @@ export interface MenuFilters {
   searchQuery: string;
   allergens: string[];
   allergenMode: AllergenFilterMode;
+  showSpecialsOnly: boolean;
+  showOffersOnly: boolean;
 }
 
 export const DEFAULT_FILTERS: MenuFilters = {
@@ -25,4 +27,6 @@ export const DEFAULT_FILTERS: MenuFilters = {
   searchQuery: '',
   allergens: [],
   allergenMode: 'exclude',
+  showSpecialsOnly: false,
+  showOffersOnly: false,
 };

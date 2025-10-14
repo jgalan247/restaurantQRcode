@@ -31,6 +31,12 @@ class MenuItem(Base):
     image_url = Column(Text)
     display_order = Column(Integer, default=0)
 
+    # Variant pricing fields (for wines, drinks with multiple sizes)
+    has_variants = Column(Boolean, default=False)
+    price_small_glass = Column(Numeric(10, 2))  # 125ml
+    price_large_glass = Column(Numeric(10, 2))  # 250ml
+    price_bottle = Column(Numeric(10, 2))  # 750ml
+
     # Filter-related fields
     spice_level = Column(String(20))  # 'mild', 'medium', 'hot', 'extra-hot'
     is_lite_bite = Column(Boolean, default=False)

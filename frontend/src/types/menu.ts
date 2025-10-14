@@ -16,6 +16,12 @@ export interface MenuItem {
   display_order?: number;
   modifiers?: Modifier[];
 
+  // Variant pricing (for wines, drinks with multiple sizes)
+  has_variants?: boolean;
+  price_small_glass?: string | number;
+  price_large_glass?: string | number;
+  price_bottle?: string | number;
+
   // Filter-related fields
   spice_level?: 'mild' | 'medium' | 'hot' | 'extra-hot';
   is_lite_bite?: boolean;
@@ -46,6 +52,9 @@ export interface CartItem {
   menuItem: MenuItem;
   quantity: number;
   modifiers: CartItemModifier[];
+  variant?: string; // 'small_glass', 'large_glass', 'bottle'
+  variantDisplay?: string; // 'Small Glass (125ml)', etc.
+  selectedPrice?: number; // Price of the selected variant
   specialInstructions?: string;
 }
 

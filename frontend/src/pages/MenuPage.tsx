@@ -9,14 +9,21 @@ import AllergenWarningModal from '../components/menu/AllergenWarningModal';
 import { MenuNavigation } from '../components/menu/MenuNavigation';
 import { BudgetBuilderButton } from '../components/budget/BudgetBuilderButton';
 import { SimpleBudgetBuilderModal } from '../components/budget/SimpleBudgetBuilderModal';
+import FeaturedOffersCarousel from '../components/promotions/FeaturedOffersCarousel';
+import DailySpecialsSection from '../components/promotions/DailySpecialsSection';
+import ActiveOffersBanner from '../components/promotions/ActiveOffersBanner';
+import SpecialDetailModal from '../components/promotions/SpecialDetailModal';
+import OfferDetailModal from '../components/promotions/OfferDetailModal';
 import { Category, MenuItem } from '../types/menu';
 import { MenuFilters as MenuFiltersType, DEFAULT_FILTERS } from '../types/filters';
 import { menuService } from '../services/menuService';
+import { promotionsApi } from '../services/promotionsApi';
 import { useCart } from '../context/CartContext';
 import { useSearchParams } from 'react-router-dom';
 import { useMenuFilters } from '../hooks/useMenuFilters';
 import { AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
+import type { Special, Offer } from '../types/admin';
 
 export function MenuPage() {
   const [searchParams] = useSearchParams();
@@ -30,13 +37,23 @@ export function MenuPage() {
   const [showAllergenModal, setShowAllergenModal] = useState(false);
   const [showBudgetBuilder, setShowBudgetBuilder] = useState(false);
 
+  // Promotions state
+  const [featuredOffers, setFeaturedOffers] = useState<Offer[]>([]);
+  const [activeOffers, setActiveOffers] = useState<Offer[]>([]);
+  const [activeSpecials, setActiveSpecials] = useState<Special[]>([]);
+  const [selectedSpecial, setSelectedSpecial] = useState<Special | null>(null);
+  const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null);
+
   // Get all menu items from all categories
   const allItems = useMemo(() => {
     return categories.flatMap(cat => cat.items);
   }, [categories]);
 
   // Apply filters to get filtered items
-  const filteredItems = useMenuFilters(allItems, filters);
+  const filteredItems = useMenuFilters(allItems, filters, {
+    specials: activeSpecials,
+    offers: activeOffers,
+  });
 
   // Reorganize filtered items back into categories
   const filteredCategories = useMemo(() => {
@@ -60,6 +77,7 @@ export function MenuPage() {
     }
 
     loadMenu();
+    loadPromotions();
   }, [searchParams, setTableInfo]);
 
   // Show allergen warning on first visit
@@ -83,6 +101,27 @@ export function MenuPage() {
       toast.error('Failed to load menu');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadPromotions = async () => {
+    try {
+      const tableNumber = searchParams.get('table');
+      const table = tableNumber ? parseInt(tableNumber) : undefined;
+
+      // Load all promotions in parallel
+      const [featured, offers, specials] = await Promise.all([
+        promotionsApi.getFeaturedOffers(),
+        promotionsApi.getActiveOffers(table),
+        promotionsApi.getActiveSpecials(table),
+      ]);
+
+      setFeaturedOffers(featured);
+      setActiveOffers(offers);
+      setActiveSpecials(specials);
+    } catch (err) {
+      console.error('Failed to load promotions:', err);
+      // Don't show error to user, just silently fail - menu still works
     }
   };
 
@@ -111,7 +150,36 @@ export function MenuPage() {
     <div className="page-container">
       <Header onCartClick={() => setIsCartOpen(true)} />
 
-      <MenuFilters filters={filters} onFilterChange={setFilters} />
+      {/* Featured Offers Carousel */}
+      {featuredOffers.length > 0 && (
+        <FeaturedOffersCarousel
+          offers={featuredOffers}
+          onViewDetails={(offer) => setSelectedOffer(offer)}
+        />
+      )}
+
+      {/* Daily Specials Section */}
+      {activeSpecials.length > 0 && (
+        <DailySpecialsSection
+          specials={activeSpecials}
+          onViewDetails={(special) => setSelectedSpecial(special)}
+        />
+      )}
+
+      {/* Active Offers Banner */}
+      {activeOffers.length > 0 && (
+        <ActiveOffersBanner
+          offers={activeOffers}
+          onViewDetails={(offer) => setSelectedOffer(offer)}
+        />
+      )}
+
+      <MenuFilters
+        filters={filters}
+        onFilterChange={setFilters}
+        hasActiveSpecials={activeSpecials.length > 0}
+        hasActiveOffers={activeOffers.length > 0}
+      />
 
       <MenuNavigation
         categories={filteredCategories}
@@ -184,6 +252,26 @@ export function MenuPage() {
         isOpen={showBudgetBuilder}
         onClose={() => setShowBudgetBuilder(false)}
       />
+
+      {/* Promotions Modals */}
+      {selectedSpecial && (
+        <SpecialDetailModal
+          special={selectedSpecial}
+          onClose={() => setSelectedSpecial(null)}
+          onAddToCart={() => {
+            // TODO: Implement add special to cart logic
+            toast.success('Special added to cart!');
+            setSelectedSpecial(null);
+          }}
+        />
+      )}
+
+      {selectedOffer && (
+        <OfferDetailModal
+          offer={selectedOffer}
+          onClose={() => setSelectedOffer(null)}
+        />
+      )}
 
       <BudgetBuilderButton onClick={() => setShowBudgetBuilder(true)} />
     </div>

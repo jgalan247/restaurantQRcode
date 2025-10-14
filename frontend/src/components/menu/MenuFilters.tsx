@@ -1,14 +1,21 @@
 import React, { useState } from 'react';
 import { MenuFilters as MenuFiltersType, DEFAULT_FILTERS } from '../../types/filters';
-import { X, Search, Filter, AlertTriangle } from 'lucide-react';
+import { X, Search, Filter, AlertTriangle, Star, Gift } from 'lucide-react';
 import { ALLERGEN_INFO, AllergenType } from '../../types/allergens';
 
 interface MenuFiltersProps {
   filters: MenuFiltersType;
   onFilterChange: (filters: MenuFiltersType) => void;
+  hasActiveSpecials?: boolean;
+  hasActiveOffers?: boolean;
 }
 
-const MenuFilters: React.FC<MenuFiltersProps> = ({ filters, onFilterChange }) => {
+const MenuFilters: React.FC<MenuFiltersProps> = ({
+  filters,
+  onFilterChange,
+  hasActiveSpecials = false,
+  hasActiveOffers = false
+}) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const updateFilter = <K extends keyof MenuFiltersType>(
@@ -64,7 +71,9 @@ const MenuFilters: React.FC<MenuFiltersProps> = ({ filters, onFilterChange }) =>
     (filters.category.includes('all') ? 0 : filters.category.length) +
     (filters.priceRange !== 'all' ? 1 : 0) +
     (filters.searchQuery ? 1 : 0) +
-    (filters.allergens.length > 0 ? 1 : 0);
+    (filters.allergens.length > 0 ? 1 : 0) +
+    (filters.showSpecialsOnly ? 1 : 0) +
+    (filters.showOffersOnly ? 1 : 0);
 
   const getChiliEmoji = (level: string) => {
     switch (level) {
@@ -111,6 +120,38 @@ const MenuFilters: React.FC<MenuFiltersProps> = ({ filters, onFilterChange }) =>
                 className="w-full pl-10 pr-4 py-2 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none"
               />
             </div>
+
+            {/* Quick Promo Filters */}
+            {(hasActiveSpecials || hasActiveOffers) && (
+              <div className="flex gap-2 flex-wrap">
+                {hasActiveSpecials && (
+                  <button
+                    onClick={() => updateFilter('showSpecialsOnly', !filters.showSpecialsOnly)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      filters.showSpecialsOnly
+                        ? 'bg-yellow-500 text-white shadow-md'
+                        : 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'
+                    }`}
+                  >
+                    <Star size={18} className={filters.showSpecialsOnly ? 'fill-white' : 'fill-yellow-500'} />
+                    <span>Specials</span>
+                  </button>
+                )}
+                {hasActiveOffers && (
+                  <button
+                    onClick={() => updateFilter('showOffersOnly', !filters.showOffersOnly)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      filters.showOffersOnly
+                        ? 'bg-purple-500 text-white shadow-md'
+                        : 'bg-purple-100 text-purple-800 hover:bg-purple-200'
+                    }`}
+                  >
+                    <Gift size={18} />
+                    <span>Offers</span>
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
           {activeFilterCount > 0 && (
@@ -377,6 +418,32 @@ const MenuFilters: React.FC<MenuFiltersProps> = ({ filters, onFilterChange }) =>
                 <button
                   onClick={() => updateFilter('allergens', [])}
                   className="hover:bg-orange-200 rounded-full p-0.5"
+                >
+                  <X size={14} />
+                </button>
+              </span>
+            )}
+
+            {filters.showSpecialsOnly && (
+              <span className="inline-flex items-center gap-1 px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm">
+                <Star size={14} className="fill-yellow-500" />
+                Specials Only
+                <button
+                  onClick={() => updateFilter('showSpecialsOnly', false)}
+                  className="hover:bg-yellow-200 rounded-full p-0.5"
+                >
+                  <X size={14} />
+                </button>
+              </span>
+            )}
+
+            {filters.showOffersOnly && (
+              <span className="inline-flex items-center gap-1 px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">
+                <Gift size={14} />
+                Offers Only
+                <button
+                  onClick={() => updateFilter('showOffersOnly', false)}
+                  className="hover:bg-purple-200 rounded-full p-0.5"
                 >
                   <X size={14} />
                 </button>

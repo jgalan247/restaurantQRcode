@@ -15,6 +15,8 @@ class OrderItemCreate(BaseModel):
     quantity: int = Field(ge=1, le=50)
     special_notes: Optional[str] = Field(None, max_length=500)
     selected_modifiers: List[ModifierSelection] = Field(default_factory=list)
+    variant: Optional[str] = None  # 'small_glass', 'large_glass', 'bottle'
+    variant_display: Optional[str] = None  # 'Small Glass (125ml)', etc.
 
 
 class OrderItemResponse(BaseModel):
@@ -25,6 +27,8 @@ class OrderItemResponse(BaseModel):
     item_total: Decimal
     special_notes: Optional[str]
     selected_modifiers: List[dict]
+    variant: Optional[str]
+    variant_display: Optional[str]
 
     class Config:
         from_attributes = True
@@ -64,7 +68,7 @@ class OrderResponse(BaseModel):
 class PaymentSplitCreate(BaseModel):
     customer_name: Optional[str] = Field(None, max_length=100)
     customer_email: EmailStr
-    amount_to_pay: Decimal = Field(gt=0, decimal_places=2)
+    amount_to_pay: Decimal = Field(gt=0)
     order_item_ids: Optional[List[int]] = None
 
 
@@ -114,6 +118,7 @@ class InvoiceItemDetail(BaseModel):
     quantity: int
     unit_price: Decimal
     modifiers: List[str] = Field(default_factory=list)
+    variant_display: Optional[str] = None  # e.g., "Large Glass (250ml)"
     special_notes: Optional[str] = None
     line_total: Decimal
 

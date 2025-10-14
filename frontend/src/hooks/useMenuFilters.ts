@@ -2,10 +2,37 @@ import { useMemo } from 'react';
 import { MenuItem } from '../types/menu';
 import { MenuFilters } from '../types/filters';
 import { parsePrice } from '../utils/formatters';
+import type { Special, Offer } from '../types/admin';
 
-export function useMenuFilters(items: MenuItem[], filters: MenuFilters): MenuItem[] {
+interface UseMenuFiltersOptions {
+  specials?: Special[];
+  offers?: Offer[];
+}
+
+export function useMenuFilters(
+  items: MenuItem[],
+  filters: MenuFilters,
+  options?: UseMenuFiltersOptions
+): MenuItem[] {
   return useMemo(() => {
     return items.filter((item) => {
+      // Specials filter
+      if (filters.showSpecialsOnly && options?.specials) {
+        const isInSpecial = options.specials.some((special) =>
+          special.items?.some((specialItem) =>
+            !specialItem.is_custom && specialItem.menu_item_id === item.id
+          )
+        );
+        if (!isInSpecial) return false;
+      }
+
+      // Offers filter
+      // Note: Currently offers apply to orders, not specific items
+      // So when "Offers Only" is selected, we show all items
+      // Future enhancement: Add applicable_items/applicable_categories to Offer model
+      if (filters.showOffersOnly && options?.offers && options.offers.length === 0) {
+        return false; // If filtering for offers but none exist, show nothing
+      }
       // Dietary filter
       if (!filters.dietary.includes('all')) {
         if (filters.dietary.includes('vegetarian') && !item.dietary_tags.includes('v')) {
@@ -110,5 +137,5 @@ export function useMenuFilters(items: MenuItem[], filters: MenuFilters): MenuIte
 
       return true;
     });
-  }, [items, filters]);
+  }, [items, filters, options?.specials, options?.offers]);
 }
