@@ -10,7 +10,7 @@ databases:
 
 services:
   - name: backend
-    source_dir: /backend
+    source_dir: backend
     github:
       branch: feature/complete-admin-system
       deploy_on_push: true
@@ -35,7 +35,7 @@ services:
         value: GBP
 
   - name: frontend
-    source_dir: /frontend
+    source_dir: frontend
     github:
       branch: feature/complete-admin-system
       deploy_on_push: true
