@@ -4,9 +4,15 @@ from app.config import get_settings
 
 settings = get_settings()
 
+# Convert DATABASE_URL to async format if needed
+# Digital Ocean provides postgresql:// but async SQLAlchemy needs postgresql+asyncpg://
+database_url = settings.DATABASE_URL
+if database_url.startswith("postgresql://"):
+    database_url = database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+
 # Create async engine
 engine = create_async_engine(
-    settings.DATABASE_URL,
+    database_url,
     echo=settings.DEBUG,
     future=True
 )
