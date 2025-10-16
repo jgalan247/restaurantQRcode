@@ -11,8 +11,8 @@ RUN npm install
 # Copy application code
 COPY . .
 
-# Expose port
-EXPOSE 5173
+# Build static assets for production
+RUN npm run build
 
-# Command to run the application
-CMD ["npm", "run", "dev", "--", "--host"]
+# Static files are now in /app/dist/
+# Digital Ocean will serve these files directly
