@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { MenuFilters as MenuFiltersType, DEFAULT_FILTERS } from '../../types/filters';
 import { X, Search, Filter, AlertTriangle, Star, Gift } from 'lucide-react';
-import { ALLERGEN_INFO, AllergenType } from '../../types/allergens';
+import { ALLERGEN_INFO } from '../../types/allergens';
 
 interface MenuFiltersProps {
   filters: MenuFiltersType;

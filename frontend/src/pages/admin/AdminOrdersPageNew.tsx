@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  ArrowLeft, Clock, DollarSign, Package, TrendingUp,
+  ArrowLeft, Clock, Package,
   Search, X, Check, AlertCircle, ChevronDown, ChevronUp,
-  RefreshCw, Calendar
+  RefreshCw
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { adminApi } from '../../services/adminApi';
@@ -63,7 +63,7 @@ export default function AdminOrdersPageNew() {
   const [activeTab, setActiveTab] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [autoRefresh, setAutoRefresh] = useState(true);
-  const [refreshInterval, setRefreshInterval] = useState(15);
+  const [_refreshInterval, _setRefreshInterval] = useState(15);  // Prefixed as unused
 
   // Fetch data
   const fetchOrders = useCallback(async () => {
@@ -104,9 +104,9 @@ export default function AdminOrdersPageNew() {
     const interval = setInterval(() => {
       fetchOrders();
       fetchStats();
-    }, refreshInterval * 1000);
+    }, _refreshInterval * 1000);
     return () => clearInterval(interval);
-  }, [autoRefresh, refreshInterval, fetchOrders, fetchStats]);
+  }, [autoRefresh, _refreshInterval, fetchOrders, fetchStats]);
 
   const handleStatusChange = async (orderId: number, newStatus: string) => {
     try {

@@ -45,7 +45,8 @@
       "Bash(xargs kill:*)",
       "Bash(open:*)",
       "Bash(docker:*)",
-      "Bash(/dev/null)"
+      "Bash(/dev/null)",
+      "Bash(git rm:*)"
     ],
     "deny": [],
     "ask": []

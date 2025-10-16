@@ -2,9 +2,15 @@
 CityPay Payment Integration Service
 TODO: Implement actual CityPay API integration for production
 Currently using mock validation for testing
+
+IMPORTANT: CityPay uses UTC timestamps for all date/time fields.
+When implementing payment processing, ensure all timestamps are converted to UTC:
+    from datetime import datetime, timezone
+    utc_timestamp = datetime.now(timezone.utc).isoformat()
 """
 from typing import Dict, Any, Optional
 from decimal import Decimal
+from datetime import datetime, timezone
 import httpx
 from app.config import get_settings
 

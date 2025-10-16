@@ -6,16 +6,12 @@ import {
   Search,
   Gift,
   Calendar,
-  DollarSign,
-  Percent,
-  Tag,
   Copy,
   Trash2,
   Eye,
   X,
   Clock,
   Users,
-  TrendingUp,
   AlertCircle
 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -23,7 +19,6 @@ import { adminApi } from '../../services/adminApi';
 import { Offer, OfferCreate } from '../../types/admin';
 
 type FilterTab = 'all' | 'active' | 'scheduled' | 'expired';
-type OfferType = 'percentage' | 'fixed' | 'bogo' | 'free_item' | 'bundle' | 'kids_free';
 
 const AdminOffersPage: React.FC = () => {
   const navigate = useNavigate();
@@ -53,7 +48,7 @@ const AdminOffersPage: React.FC = () => {
   });
 
   // Extended form state for new fields
-  const [extendedForm, setExtendedForm] = useState({
+  const [_extendedForm, _setExtendedForm] = useState({  // Prefixed as unused
     internal_description: '',
     customer_description: '',
     promo_code: '',
@@ -121,15 +116,13 @@ const AdminOffersPage: React.FC = () => {
 
   // Get offer type badge
   const getOfferTypeBadge = (type: string) => {
-    const badges = {
+    const badges: Record<string, {text: string, color: string}> = {
       percentage: { text: 'Percentage', color: 'bg-blue-100 text-blue-700' },
       fixed: { text: 'Fixed Amount', color: 'bg-green-100 text-green-700' },
       bogo: { text: 'BOGO', color: 'bg-purple-100 text-purple-700' },
       free_item: { text: 'Free Item', color: 'bg-pink-100 text-pink-700' },
-      bundle: { text: 'Bundle', color: 'bg-indigo-100 text-indigo-700' },
-      kids_free: { text: 'Kids Free', color: 'bg-yellow-100 text-yellow-700' },
     };
-    const badge = badges[type as keyof typeof badges] || badges.percentage;
+    const badge = badges[type] || badges.percentage;
     return (
       <span className={`px-2 py-1 rounded-full text-xs font-medium ${badge.color}`}>
         {badge.text}
@@ -164,10 +157,6 @@ const AdminOffersPage: React.FC = () => {
         return 'Buy One Get One';
       case 'free_item':
         return 'Free Item';
-      case 'bundle':
-        return 'Bundle Deal';
-      case 'kids_free':
-        return 'Kids Eat Free';
       default:
         return '';
     }
@@ -180,9 +169,9 @@ const AdminOffersPage: React.FC = () => {
       setFormData({
         name: offer.name,
         description: offer.description || '',
-        discount_type: offer.discount_type,
-        discount_value: offer.discount_value,
-        minimum_spend: offer.minimum_spend,
+        discount_type: offer.discount_type || 'percentage',
+        discount_value: Number(offer.discount_value) || 0,
+        minimum_spend: Number(offer.minimum_spend) || 0,
         applicable_days: offer.applicable_days || [],
         applicable_times_start: offer.applicable_times_start || '',
         applicable_times_end: offer.applicable_times_end || '',
@@ -209,7 +198,7 @@ const AdminOffersPage: React.FC = () => {
         max_usage: undefined,
       });
       setSelectedDays([]);
-      setExtendedForm({
+      _setExtendedForm({
         internal_description: '',
         customer_description: '',
         promo_code: '',
@@ -267,16 +256,16 @@ const AdminOffersPage: React.FC = () => {
         return;
       }
 
-      const payload = {
+      const payload: Partial<OfferCreate> = {
         ...formData,
-        applicable_days: selectedDays.length > 0 ? selectedDays : null,
+        applicable_days: selectedDays.length > 0 ? selectedDays : undefined,
       };
 
       if (editingOffer) {
         await adminApi.updateOffer(editingOffer.id, payload);
         toast.success('Offer updated successfully');
       } else {
-        await adminApi.createOffer(payload);
+        await adminApi.createOffer(payload as OfferCreate);
         toast.success('Offer created successfully');
       }
 
@@ -322,10 +311,19 @@ const AdminOffersPage: React.FC = () => {
   // Duplicate offer
   const handleDuplicate = async (offer: Offer) => {
     try {
-      const duplicateData = {
-        ...offer,
+      const duplicateData: OfferCreate = {
         name: `${offer.name} (Copy)`,
+        description: offer.description,
+        discount_type: offer.discount_type || 'percentage',
+        discount_value: Number(offer.discount_value) || 0,
+        minimum_spend: Number(offer.minimum_spend) || 0,
+        applicable_days: offer.applicable_days,
+        applicable_times_start: offer.applicable_times_start,
+        applicable_times_end: offer.applicable_times_end,
+        start_date: offer.start_date,
+        end_date: offer.end_date,
         is_active: false,
+        max_usage: offer.max_usage,
       };
       await adminApi.createOffer(duplicateData);
       toast.success('Offer duplicated successfully');
@@ -493,10 +491,10 @@ const AdminOffersPage: React.FC = () => {
                   )}
 
                   {/* Days */}
-                  {offer.applicable_days && offer.applicable_days.length > 0 && (
+                  {offer.applicable_days && Array.isArray(offer.applicable_days) && offer.applicable_days.length > 0 && (
                     <div className="flex items-center text-sm text-gray-600 mb-4">
                       <Clock className="w-4 h-4 mr-2" />
-                      <span>{offer.applicable_days.join(', ')}</span>
+                      <span>{(offer.applicable_days as string[]).join(', ')}</span>
                     </div>
                   )}
 

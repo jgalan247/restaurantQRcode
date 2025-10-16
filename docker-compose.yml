@@ -3,9 +3,9 @@ services:
     image: postgres:15-alpine
     container_name: lahacienda-db
     environment:
-      POSTGRES_USER: lahacienda
-      POSTGRES_PASSWORD: password123
-      POSTGRES_DB: lahacienda
+      POSTGRES_USER: ${POSTGRES_USER:-lahacienda}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_this_password}
+      POSTGRES_DB: ${POSTGRES_DB:-lahacienda}
     ports:
       - "5432:5432"
     volumes:
@@ -31,7 +31,7 @@ services:
     env_file:
       - ./backend/.env
     environment:
-      DATABASE_URL: postgresql+asyncpg://lahacienda:password123@lahacienda-db:5432/lahacienda
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-lahacienda}:${POSTGRES_PASSWORD:-change_this_password}@postgres:5432/${POSTGRES_DB:-lahacienda}
       PYTHONPATH: /app
     depends_on:
       postgres:

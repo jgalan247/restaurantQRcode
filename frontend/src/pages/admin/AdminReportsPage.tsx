@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -369,7 +369,7 @@ export default function AdminReportsPage() {
                       cx="50%"
                       cy="50%"
                       outerRadius={100}
-                      label={(entry) => `${entry.category}: ${entry.percentage.toFixed(1)}%`}
+                      label={(entry: any) => `${entry.category}: ${(entry.percentage as number).toFixed(1)}%`}
                     >
                       {revenueByCategory.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />

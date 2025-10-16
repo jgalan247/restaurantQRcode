@@ -128,9 +128,9 @@ const FeaturedOffersCarousel: React.FC<FeaturedOffersCarouselProps> = ({
               <span className="px-3 py-1 bg-white bg-opacity-20 rounded-full">
                 {getTimeDisplay(currentOffer)}
               </span>
-              {currentOffer.minimum_spend > 0 && (
+              {currentOffer.minimum_spend && Number(currentOffer.minimum_spend) > 0 && (
                 <span className="px-3 py-1 bg-white bg-opacity-20 rounded-full">
-                  Min spend: £{typeof currentOffer.minimum_spend === 'number' ? currentOffer.minimum_spend.toFixed(2) : parseFloat(currentOffer.minimum_spend as any).toFixed(2)}
+                  Min spend: £{typeof currentOffer.minimum_spend === 'number' ? currentOffer.minimum_spend.toFixed(2) : parseFloat(String(currentOffer.minimum_spend)).toFixed(2)}
                 </span>
               )}
             </div>

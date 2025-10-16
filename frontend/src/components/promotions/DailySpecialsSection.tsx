@@ -22,7 +22,7 @@ const DailySpecialsSection: React.FC<DailySpecialsSectionProps> = ({
 
   const getAvailabilityText = (special: Special) => {
     if (special.start_date && special.end_date) {
-      const start = new Date(special.start_date);
+      const _start = new Date(special.start_date);  // Prefixed with underscore since unused
       const end = new Date(special.end_date);
       const today = new Date();
 

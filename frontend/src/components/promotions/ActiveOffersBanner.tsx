@@ -132,9 +132,9 @@ const ActiveOffersBanner: React.FC<ActiveOffersBannerProps> = ({
                         {formatTime(offer.applicable_times_start)} - {formatTime(offer.applicable_times_end)}
                       </span>
                     )}
-                    {offer.minimum_spend > 0 && (
+                    {offer.minimum_spend && Number(offer.minimum_spend) > 0 && (
                       <span className="font-medium text-purple-600">
-                        Min spend: £{typeof offer.minimum_spend === 'number' ? offer.minimum_spend.toFixed(2) : parseFloat(offer.minimum_spend as any).toFixed(2)}
+                        Min spend: £{typeof offer.minimum_spend === 'number' ? offer.minimum_spend.toFixed(2) : parseFloat(String(offer.minimum_spend)).toFixed(2)}
                       </span>
                     )}
                   </div>
