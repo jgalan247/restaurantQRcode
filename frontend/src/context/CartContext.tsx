@@ -8,8 +8,14 @@ interface CartState {
   sessionToken: string;
 }
 
+interface VariantInfo {
+  variant: string;
+  variantDisplay: string;
+  selectedPrice: number;
+}
+
 type CartAction =
-  | { type: 'ADD_ITEM'; payload: { menuItem: MenuItem; modifiers: CartItemModifier[]; specialInstructions?: string } }
+  | { type: 'ADD_ITEM'; payload: { menuItem: MenuItem; modifiers: CartItemModifier[]; specialInstructions?: string; variantInfo?: VariantInfo } }
   | { type: 'REMOVE_ITEM'; payload: number } // index
   | { type: 'UPDATE_QUANTITY'; payload: { index: number; quantity: number } }
   | { type: 'CLEAR_CART' }
@@ -18,7 +24,7 @@ type CartAction =
 
 interface CartContextType {
   state: CartState;
-  addItem: (menuItem: MenuItem, modifiers: CartItemModifier[], specialInstructions?: string) => void;
+  addItem: (menuItem: MenuItem, modifiers: CartItemModifier[], specialInstructions?: string, variantInfo?: VariantInfo) => void;
   removeItem: (index: number) => void;
   updateQuantity: (index: number, quantity: number) => void;
   clearCart: () => void;
@@ -42,14 +48,15 @@ const initialState: CartState = {
 function cartReducer(state: CartState, action: CartAction): CartState {
   switch (action.type) {
     case 'ADD_ITEM': {
-      const { menuItem, modifiers, specialInstructions } = action.payload;
+      const { menuItem, modifiers, specialInstructions, variantInfo } = action.payload;
 
-      // Check if item with same modifiers and instructions already exists
+      // Check if item with same modifiers, instructions, and variant already exists
       const existingIndex = state.items.findIndex(
         (item) =>
           item.menuItem.id === menuItem.id &&
           JSON.stringify(item.modifiers) === JSON.stringify(modifiers) &&
-          item.specialInstructions === specialInstructions
+          item.specialInstructions === specialInstructions &&
+          item.variant === variantInfo?.variant
       );
 
       if (existingIndex >= 0) {
@@ -71,6 +78,9 @@ function cartReducer(state: CartState, action: CartAction): CartState {
               quantity: 1,
               modifiers,
               specialInstructions,
+              variant: variantInfo?.variant,
+              variantDisplay: variantInfo?.variantDisplay,
+              selectedPrice: variantInfo?.selectedPrice,
             },
           ],
         };
@@ -146,8 +156,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   // Wrap all functions in useCallback to prevent infinite re-renders
   const addItem = useCallback(
-    (menuItem: MenuItem, modifiers: CartItemModifier[], specialInstructions?: string) => {
-      dispatch({ type: 'ADD_ITEM', payload: { menuItem, modifiers, specialInstructions } });
+    (menuItem: MenuItem, modifiers: CartItemModifier[], specialInstructions?: string, variantInfo?: VariantInfo) => {
+      dispatch({ type: 'ADD_ITEM', payload: { menuItem, modifiers, specialInstructions, variantInfo } });
     },
     []
   );
@@ -170,7 +180,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const getCartSubtotal = useCallback((): number => {
     return state.items.reduce((total, item) => {
-      const itemPrice = parsePrice(item.menuItem.price);
+      // Use selectedPrice for variant items, otherwise use menu item price
+      const itemPrice = item.selectedPrice ?? parsePrice(item.menuItem.price);
       const modifiersPrice = item.modifiers.reduce((sum, mod) => sum + parsePrice(mod.price), 0);
       return total + (itemPrice + modifiersPrice) * item.quantity;
     }, 0);

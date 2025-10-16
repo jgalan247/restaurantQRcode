@@ -16,7 +16,7 @@ export const SimpleBudgetBuilderModal: React.FC<SimpleBudgetBuilderModalProps> =
   isOpen,
   onClose,
 }) => {
-  const { addItem } = useCart();
+  const { addItem: _addItem } = useCart();  // Prefix with underscore if unused
   const [budget, setBudget] = useState(30);
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<{ meal_combos: MealCombo[]; chef_combos: ChefCombo[] } | null>(null);

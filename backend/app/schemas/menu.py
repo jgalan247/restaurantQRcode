@@ -12,7 +12,7 @@ AllergenType = Literal[
 
 class ModifierBase(BaseModel):
     name: str = Field(max_length=100)
-    price: Decimal = Field(ge=0, decimal_places=2)
+    price: Decimal = Field(ge=0)
     modifier_type: str = "addon"
     is_required: bool = False
 
@@ -32,9 +32,15 @@ class ModifierResponse(ModifierBase):
 class MenuItemBase(BaseModel):
     name: str = Field(max_length=200)
     description: Optional[str] = None
-    price: Decimal = Field(ge=0, decimal_places=2)
+    price: Decimal = Field(ge=0)
     dietary_tags: List[str] = Field(default_factory=list)
     is_available: bool = True
+
+    # Variant pricing fields (for wines, drinks with multiple sizes)
+    has_variants: bool = False
+    price_small_glass: Optional[Decimal] = Field(None, ge=0)
+    price_large_glass: Optional[Decimal] = Field(None, ge=0)
+    price_bottle: Optional[Decimal] = Field(None, ge=0)
 
     # Filter-related fields
     spice_level: Optional[str] = None
@@ -59,11 +65,24 @@ class MenuItemCreate(MenuItemBase):
 
 class MenuItemUpdate(BaseModel):
     name: Optional[str] = Field(None, max_length=200)
+    category_id: Optional[int] = None
     description: Optional[str] = None
     price: Optional[Decimal] = Field(None, ge=0)
     dietary_tags: Optional[List[str]] = None
     is_available: Optional[bool] = None
     image_url: Optional[str] = None
+    has_variants: Optional[bool] = None
+    price_small_glass: Optional[Decimal] = Field(None, ge=0)
+    price_large_glass: Optional[Decimal] = Field(None, ge=0)
+    price_bottle: Optional[Decimal] = Field(None, ge=0)
+    spice_level: Optional[str] = None
+    is_lite_bite: Optional[bool] = None
+    is_child_friendly: Optional[bool] = None
+    is_salad: Optional[bool] = None
+    is_deal: Optional[bool] = None
+    is_gluten_free: Optional[bool] = None
+    calories: Optional[int] = None
+    allergens: Optional[List[str]] = None
 
 
 class MenuItemResponse(MenuItemBase):
@@ -171,3 +190,45 @@ class BudgetBuilderLogRequest(BaseModel):
     combo_selected: Optional[int]
     upgrade_accepted: bool = False
     upgrade_amount: Optional[Decimal] = None
+
+
+# Admin Menu Management Schemas
+class MenuItemAvailability(BaseModel):
+    is_available: bool
+
+
+class AdminMenuItemResponse(BaseModel):
+    """Admin response with category name included"""
+    id: int
+    name: str
+    category_id: int
+    category_name: str
+    description: Optional[str]
+    price: Decimal
+    has_variants: bool
+    price_small_glass: Optional[Decimal]
+    price_large_glass: Optional[Decimal]
+    price_bottle: Optional[Decimal]
+    calories: Optional[int]
+    allergens: Optional[List[str]]
+    image_url: Optional[str]
+    is_available: bool
+    spice_level: Optional[str]
+    is_lite_bite: bool
+    is_child_friendly: bool
+    is_salad: bool
+    is_deal: bool
+    is_gluten_free: bool
+    dietary_tags: Optional[List[str]]
+    display_order: Optional[int]
+
+    class Config:
+        from_attributes = True
+
+
+class MenuItemListResponse(BaseModel):
+    items: List[AdminMenuItemResponse]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int

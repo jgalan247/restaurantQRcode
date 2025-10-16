@@ -46,6 +46,8 @@ class OrderItem(Base):
     item_total = Column(Numeric(10, 2), nullable=False)
     special_notes = Column(Text)
     selected_modifiers = Column(JSONB, default=[])
+    variant = Column(String(50))  # 'small_glass', 'large_glass', 'bottle'
+    variant_display = Column(String(100))  # 'Small Glass (125ml)', etc.
     created_at = Column(TIMESTAMP, server_default=func.now())
 
     # Relationships

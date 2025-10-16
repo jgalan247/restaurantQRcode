@@ -1,6 +1,5 @@
 import { Plus, AlertTriangle } from 'lucide-react';
 import { MenuItem as MenuItemType } from '../../types/menu';
-import { DietaryBadge } from './DietaryBadge';
 import { formatCurrency } from '../../utils/formatters';
 import AllergenList from './AllergenList';
 import { CalorieBadge } from './CalorieBadge';
@@ -15,7 +14,7 @@ export function MenuItem({ item, onClick }: MenuItemProps) {
   const isVegetarian = item.dietary_tags.includes('v');
   const isVegan = item.dietary_tags.includes('vg');
   const isGlutenFree = item.dietary_tags.includes('gluten_free') || item.is_gluten_free;
-  const isSpicy = item.dietary_tags.includes('spicy') || !!item.spice_level;
+  // const isSpicy = item.dietary_tags.includes('spicy') || !!item.spice_level;  // Unused
 
   const getChiliCount = (level?: string): number => {
     switch (level) {
