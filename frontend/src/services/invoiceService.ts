@@ -48,7 +48,8 @@ export const invoiceService = {
    * Get PDF download URL for an order invoice
    */
   getPdfDownloadUrl(orderId: number): string {
-    const baseUrl = api.defaults.baseURL || 'http://localhost:8000/api/v1';
+    // Use the configured baseURL from the api instance
+    const baseUrl = api.defaults.baseURL;
     return `${baseUrl}/orders/${orderId}/invoice/pdf`;
   },
 
