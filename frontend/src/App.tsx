@@ -21,6 +21,7 @@ import ProtectedRoute from './components/admin/ProtectedRoute';
 function App() {
   return (
     <BrowserRouter
+      basename="/restaurantqrcode-frontend"
       future={{
         v7_startTransition: true,
         v7_relativeSplatPath: true,
