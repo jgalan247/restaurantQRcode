@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { API_URL } from '../config/api.config';
 import type {
   AdminLoginRequest,
   AdminToken,
@@ -26,7 +27,7 @@ import type {
   TableUpdate,
 } from '../types/settings';
 
-const API_BASE = 'http://localhost:8000/api/v1';
+const API_BASE = API_URL;
 
 // Get auth headers with JWT token
 const getAuthHeaders = () => {
