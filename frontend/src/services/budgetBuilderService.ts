@@ -1,6 +1,7 @@
 import axios from 'axios';
+import { API_URL } from '../config/api.config';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://seahorse-app-zxz5f.ondigitalocean.app/api/v1';
+const API_BASE_URL = API_URL;
 
 export interface BudgetBuilderRequest {
   budget: number;

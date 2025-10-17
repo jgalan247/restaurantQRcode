@@ -25,8 +25,9 @@ import type {
   Table,
   TableUpdate,
 } from '../types/settings';
+import { API_URL } from '../config/api.config';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'https://seahorse-app-zxz5f.ondigitalocean.app/api/v1';
+const API_BASE = API_URL;
 
 // Get auth headers with JWT token
 const getAuthHeaders = () => {
