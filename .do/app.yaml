@@ -47,3 +47,4 @@ services:
         value: ${backend.PUBLIC_URL}/api/v1
       - key: VITE_APP_NAME
         value: La Hacienda
+    # Trigger rebuild after API URL fixes
