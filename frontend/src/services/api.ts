@@ -1,6 +1,11 @@
 import axios, { AxiosInstance } from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+// Log environment variable for debugging
+console.log('VITE_API_URL from env:', import.meta.env.VITE_API_URL);
+console.log('import.meta.env:', import.meta.env);
+
+const API_URL = import.meta.env.VITE_API_URL || 'https://seahorse-app-zxz5f.ondigitalocean.app/api/v1';
+console.log('Using API_URL:', API_URL);
 
 export const api: AxiosInstance = axios.create({
   baseURL: API_URL,

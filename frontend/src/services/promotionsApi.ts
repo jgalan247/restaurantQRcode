@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { Special, Offer } from '../types/admin';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+const API_BASE = import.meta.env.VITE_API_URL || 'https://seahorse-app-zxz5f.ondigitalocean.app/api/v1';
 
 export const promotionsApi = {
   // Specials
