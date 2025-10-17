@@ -44,7 +44,9 @@ services:
     static_site: true
     envs:
       - key: VITE_API_URL
+        scope: BUILD_TIME
         value: ${backend.PUBLIC_URL}/api/v1
       - key: VITE_APP_NAME
+        scope: BUILD_TIME
         value: La Hacienda
-    # Trigger rebuild after API URL fixes
+    # Environment vars must be available at BUILD_TIME for Vite
