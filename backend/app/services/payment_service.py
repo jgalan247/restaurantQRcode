@@ -28,20 +28,25 @@ class CityPayService:
         amount_in_cents = int(amount * 100)
 
         payload = {
-            "merchantid": self.merchant_id,
+            "merchantid": int(self.merchant_id),
+            "identifier": order_number,
             "amount": amount_in_cents,
             "currency": settings.CURRENCY,
-            "identifier": order_number,
-            "trans_type": "sale",
-            "cardHolderEmail": customer_email,
-            "description": f"La Hacienda Order {order_number}",
-            "success_url": f"{settings.FRONTEND_URL}/payment/success?token={split_token}",
-            "failure_url": f"{settings.FRONTEND_URL}/payment/failure?token={split_token}",
-            "cancel_url": f"{settings.FRONTEND_URL}/checkout",
+            "cardholder": {
+                "email": customer_email,
+            },
+            "config": {
+                "redirect_success": f"{settings.FRONTEND_URL}/payment/success?token={split_token}",
+                "redirect_failure": f"{settings.FRONTEND_URL}/payment/failure?token={split_token}",
+                "redirect_cancel": f"{settings.FRONTEND_URL}/checkout",
+            },
+            "cart": {
+                "contents": f"La Hacienda Order {order_number}",
+            }
         }
 
         headers = {
-            "Authorization": f"Bearer {self.api_key}",
+            "cp-api-key": self.api_key,
             "Content-Type": "application/json",
         }
 

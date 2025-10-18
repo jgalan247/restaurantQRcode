@@ -62,7 +62,7 @@ services:
         scope: RUN_TIME
         type: SECRET
       - key: CITYPAY_BASE_URL
-        value: https://api.citypay.com/v6
+        value: https://sandbox.citypay.com/v6
       # Email Service
       - key: MAIL_USERNAME
         scope: RUN_TIME
