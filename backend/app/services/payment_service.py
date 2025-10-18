@@ -22,16 +22,17 @@ class CityPayService:
         customer_email: str,
         split_token: str,
     ) -> Dict[str, Any]:
-        """Create CityPay payment intent"""
+        """Create CityPay PayLink token"""
 
         # Convert to cents/pence
         amount_in_cents = int(amount * 100)
 
         payload = {
-            "merchantid": int(self.merchant_id),
-            "identifier": order_number,
+            "merchantId": int(self.merchant_id),
+            "licenceKey": self.api_key,
             "amount": amount_in_cents,
-            "currency": settings.CURRENCY,
+            "identifier": order_number,
+            "test": True,  # Set to True for sandbox/testing
             "cardholder": {
                 "email": customer_email,
             },
@@ -46,13 +47,12 @@ class CityPayService:
         }
 
         headers = {
-            "cp-api-key": self.api_key,
             "Content-Type": "application/json",
         }
 
         # Log the request for debugging
-        logger.info(f"Creating CityPay payment intent for order {order_number}")
-        logger.info(f"CityPay URL: {self.base_url}/v6/paylink")
+        logger.info(f"Creating CityPay PayLink token for order {order_number}")
+        logger.info(f"CityPay URL: {self.base_url}/paylink3/create")
         logger.info(f"Amount: {amount_in_cents} pence (£{amount})")
         logger.info(f"Merchant ID: {self.merchant_id}")
         logger.info(f"Payload: {payload}")
@@ -60,7 +60,7 @@ class CityPayService:
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.post(
-                    f"{self.base_url}/v6/paylink",
+                    f"{self.base_url}/paylink3/create",
                     json=payload,
                     headers=headers,
                     timeout=30.0,
@@ -73,8 +73,18 @@ class CityPayService:
                 response.raise_for_status()
                 response_data = response.json()
 
-                logger.info(f"CityPay payment intent created successfully")
-                return response_data
+                logger.info(f"CityPay PayLink token created successfully")
+
+                # Extract the payment URL from the response
+                # PayLink returns: {"url": "https://secure.citypay.com/paylink/token", ...}
+                payment_url = response_data.get("url")
+
+                return {
+                    "identifier": response_data.get("identifier"),
+                    "redirect_url": payment_url,
+                    "payment_url": payment_url,  # Alias for compatibility
+                    "token": response_data.get("token"),
+                }
 
         except httpx.HTTPStatusError as e:
             logger.error(f"CityPay API HTTP error: {e.response.status_code}")
