@@ -45,6 +45,12 @@ class CityPayService:
             "Content-Type": "application/json",
         }
 
+        # Log the request for debugging
+        logger.info(f"Creating CityPay payment intent for order {order_number}")
+        logger.info(f"CityPay URL: {self.base_url}/payment")
+        logger.info(f"Amount: {amount_in_cents} pence (£{amount})")
+        logger.info(f"Merchant ID: {self.merchant_id}")
+
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.post(
@@ -53,10 +59,23 @@ class CityPayService:
                     headers=headers,
                     timeout=30.0,
                 )
+
+                # Log response for debugging
+                logger.info(f"CityPay Response Status: {response.status_code}")
+                logger.info(f"CityPay Response: {response.text[:500]}")  # First 500 chars
+
                 response.raise_for_status()
-                return response.json()
+                response_data = response.json()
+
+                logger.info(f"CityPay payment intent created successfully")
+                return response_data
+
+        except httpx.HTTPStatusError as e:
+            logger.error(f"CityPay API HTTP error: {e.response.status_code}")
+            logger.error(f"CityPay error response: {e.response.text}")
+            raise ValueError(f"CityPay API error ({e.response.status_code}): {e.response.text}")
         except httpx.HTTPError as e:
-            logger.error(f"CityPay API error: {e}")
+            logger.error(f"CityPay API connection error: {str(e)}")
             raise ValueError(f"Payment processing failed: {str(e)}")
 
     async def verify_payment(self, transaction_id: str) -> Dict[str, Any]:

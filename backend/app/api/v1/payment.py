@@ -19,6 +19,25 @@ router = APIRouter()
 settings = get_settings()
 
 
+@router.get("/test-citypay")
+async def test_citypay_connection():
+    """
+    Test CityPay API connection and credentials
+    Returns configuration info (without sensitive data)
+    """
+    citypay = CityPayService()
+
+    return {
+        "citypay_base_url": citypay.base_url,
+        "merchant_id": citypay.merchant_id[:4] + "****" if len(citypay.merchant_id) > 4 else "****",
+        "api_key_set": bool(citypay.api_key and len(citypay.api_key) > 0),
+        "api_key_preview": citypay.api_key[:10] + "****" if len(citypay.api_key) > 10 else "****",
+        "currency": settings.CURRENCY,
+        "frontend_url": settings.FRONTEND_URL,
+        "status": "Configuration loaded - ready to test payment"
+    }
+
+
 class MockPaymentRequest(BaseModel):
     """Request model for mock payment (test mode only)"""
     card_number: str
