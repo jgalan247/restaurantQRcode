@@ -25,7 +25,19 @@ async def test_citypay_connection():
     Test CityPay API connection and credentials
     Returns configuration info (without sensitive data)
     """
+    import httpx
+
     citypay = CityPayService()
+
+    # Get server's outbound IP address
+    outbound_ip = "unknown"
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get("https://api.ipify.org?format=json", timeout=5.0)
+            if response.status_code == 200:
+                outbound_ip = response.json().get("ip", "unknown")
+    except:
+        pass
 
     return {
         "citypay_base_url": citypay.base_url,
@@ -34,7 +46,9 @@ async def test_citypay_connection():
         "api_key_preview": citypay.api_key[:10] + "****" if len(citypay.api_key) > 10 else "****",
         "currency": settings.CURRENCY,
         "frontend_url": settings.FRONTEND_URL,
-        "status": "Configuration loaded - ready to test payment"
+        "server_outbound_ip": outbound_ip,
+        "status": "Configuration loaded - ready to test payment",
+        "note": "Add server_outbound_ip to CityPay IP whitelist in merchant portal"
     }
 
 
