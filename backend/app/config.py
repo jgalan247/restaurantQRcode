@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     # CityPay
     CITYPAY_MERCHANT_ID: str
     CITYPAY_API_KEY: str
-    CITYPAY_BASE_URL: str = "https://sandbox.citypay.com/v6"
+    CITYPAY_BASE_URL: str = "https://sandbox.citypay.com"
 
     # Email
     MAIL_USERNAME: str
