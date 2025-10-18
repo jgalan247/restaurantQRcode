@@ -38,7 +38,7 @@ class CityPayService:
             "identifier": order_number,
             "test": True,  # Set to True for sandbox/testing
             "cardholder": {
-                "email": customer_email,
+                "email": customer_email if customer_email else "guest@lahacienda.com",
             },
             "config": {
                 "redirect_success": f"{settings.FRONTEND_URL}/payment/success?token={split_token}",
@@ -46,7 +46,14 @@ class CityPayService:
                 "redirect_cancel": f"{settings.FRONTEND_URL}/checkout",
             },
             "cart": {
-                "contents": f"La Hacienda Order {order_number}",
+                "contents": [
+                    {
+                        "name": f"La Hacienda Order {order_number}",
+                        "description": f"Restaurant order {order_number}",
+                        "count": 1,
+                        "amount": amount_in_cents,
+                    }
+                ]
             }
         }
 
