@@ -47,14 +47,15 @@ class CityPayService:
 
         # Log the request for debugging
         logger.info(f"Creating CityPay payment intent for order {order_number}")
-        logger.info(f"CityPay URL: {self.base_url}/payment")
+        logger.info(f"CityPay URL: {self.base_url}/paylink/create")
         logger.info(f"Amount: {amount_in_cents} pence (£{amount})")
         logger.info(f"Merchant ID: {self.merchant_id}")
+        logger.info(f"Payload: {payload}")
 
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.post(
-                    f"{self.base_url}/payment",
+                    f"{self.base_url}/paylink/create",
                     json=payload,
                     headers=headers,
                     timeout=30.0,

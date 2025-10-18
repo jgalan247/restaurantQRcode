@@ -40,10 +40,6 @@ export function CheckoutPage() {
 
   const handleCustomerInfoSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!customerEmail) {
-      toast.error('Email is required');
-      return;
-    }
     setStep('payment-method');
   };
 
@@ -82,7 +78,7 @@ export function CheckoutPage() {
           special_instructions: item.specialInstructions,
         })),
         customer_name: customerName || undefined,
-        customer_email: customerEmail,
+        customer_email: customerEmail || 'guest@lahacienda.com',
         special_requests: specialRequests || undefined,
       };
 
@@ -205,12 +201,11 @@ export function CheckoutPage() {
                 placeholder="John Doe"
               />
               <Input
-                label="Email *"
+                label="Email (optional)"
                 type="email"
                 value={customerEmail}
                 onChange={(e) => setCustomerEmail(e.target.value)}
                 placeholder="john@example.com"
-                required
               />
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
