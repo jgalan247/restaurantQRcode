@@ -36,7 +36,7 @@ class Settings(BaseSettings):
     # Business Logic
     GST_RATE: float = 0.05  # 5%
     CURRENCY: str = "GBP"
-    FRONTEND_URL: str = "http://localhost:5173"
+    FRONTEND_URL: str  # Required - must be set in environment variables
 
     # Restaurant Details (for invoices)
     RESTAURANT_NAME: str = "La Hacienda"
