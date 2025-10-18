@@ -8,14 +8,30 @@ import {
 
 export const paymentService = {
   /**
-   * Create single payment for entire order
+   * Create single payment for entire order using real CityPay integration
+   * Returns a payment URL to redirect the customer to CityPay's payment page
    */
   async createSinglePayment(
     orderId: number,
     paymentData: SinglePaymentRequest
   ): Promise<PaymentResponse> {
     const response = await api.post<PaymentResponse>(
-      `/payment/single/${orderId}`,
+      `/payment/process-single/${orderId}`,
+      paymentData
+    );
+    return response.data;
+  },
+
+  /**
+   * Create mock single payment for testing (bypasses CityPay)
+   * Only use this for frontend testing - payments are auto-approved
+   */
+  async createMockSinglePayment(
+    orderId: number,
+    paymentData: SinglePaymentRequest
+  ): Promise<PaymentResponse> {
+    const response = await api.post<PaymentResponse>(
+      `/payment/mock-single/${orderId}`,
       paymentData
     );
     return response.data;

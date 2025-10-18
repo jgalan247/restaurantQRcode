@@ -90,10 +90,28 @@ export function CheckoutPage() {
 
       // Create payment based on method
       if (paymentMethod === PaymentMethod.SINGLE) {
-        await paymentService.createSinglePayment(order.id, {
-          email: customerEmail,
+        // For single payment, create payment intent and redirect to CityPay
+        const paymentResponse = await paymentService.createSinglePayment(order.id, {
+          card_number: '4111111111111111', // Placeholder - will be entered on CityPay page
+          expiry_date: '12/25',
+          cvv: '123',
+          cardholder_name: customerName || customerEmail,
           tip_percentage: tipPercentage,
         });
+
+        // Clear cart
+        clearCart();
+
+        // Redirect to CityPay payment page
+        if (paymentResponse.payment_url) {
+          toast.success('Redirecting to secure payment page...');
+          window.location.href = paymentResponse.payment_url;
+          return;
+        } else {
+          toast.error('Payment URL not received from payment processor');
+          setStep('tip');
+          return;
+        }
       } else if (paymentMethod === PaymentMethod.SPLIT_EQUAL) {
         await paymentService.splitPaymentEqually(order.id, {
           people_count: splitEmails.length,
