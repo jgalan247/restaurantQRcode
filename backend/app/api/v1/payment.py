@@ -29,15 +29,35 @@ async def test_citypay_connection():
 
     citypay = CityPayService()
 
-    # Get server's outbound IP address
-    outbound_ip = "unknown"
+    # Get server's outbound IP address from multiple sources
+    outbound_ips = {}
+
+    # Try ipify
     try:
         async with httpx.AsyncClient() as client:
             response = await client.get("https://api.ipify.org?format=json", timeout=5.0)
             if response.status_code == 200:
-                outbound_ip = response.json().get("ip", "unknown")
+                outbound_ips["ipify"] = response.json().get("ip", "unknown")
     except:
-        pass
+        outbound_ips["ipify"] = "error"
+
+    # Try ifconfig.me
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get("https://ifconfig.me/ip", timeout=5.0)
+            if response.status_code == 200:
+                outbound_ips["ifconfig_me"] = response.text.strip()
+    except:
+        outbound_ips["ifconfig_me"] = "error"
+
+    # Try icanhazip
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get("https://icanhazip.com", timeout=5.0)
+            if response.status_code == 200:
+                outbound_ips["icanhazip"] = response.text.strip()
+    except:
+        outbound_ips["icanhazip"] = "error"
 
     return {
         "citypay_base_url": citypay.base_url,
@@ -46,9 +66,9 @@ async def test_citypay_connection():
         "api_key_preview": citypay.api_key[:10] + "****" if len(citypay.api_key) > 10 else "****",
         "currency": settings.CURRENCY,
         "frontend_url": settings.FRONTEND_URL,
-        "server_outbound_ip": outbound_ip,
+        "server_outbound_ips": outbound_ips,
         "status": "Configuration loaded - ready to test payment",
-        "note": "Add server_outbound_ip to CityPay IP whitelist in merchant portal"
+        "note": "Whitelist ALL outbound IPs shown above in CityPay merchant portal"
     }
 
 
