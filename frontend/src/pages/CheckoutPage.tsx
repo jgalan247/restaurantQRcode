@@ -15,16 +15,13 @@ import { PaymentMethod } from '../types/payment';
 import { LoadingSpinner } from '../components/layout/LoadingSpinner';
 import toast from 'react-hot-toast';
 
-type Step = 'customer-info' | 'payment-method' | 'payment-details' | 'tip' | 'processing';
+type Step = 'payment-method' | 'payment-details' | 'tip' | 'processing';
 
 export function CheckoutPage() {
   const navigate = useNavigate();
   const { state, getCartSubtotal, getGSTAmount, clearCart } = useCart();
 
-  const [step, setStep] = useState<Step>('customer-info');
-  const [customerName, setCustomerName] = useState('');
-  const [customerEmail, setCustomerEmail] = useState('');
-  const [specialRequests, setSpecialRequests] = useState('');
+  const [step, setStep] = useState<Step>('payment-method');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null);
   const [tipPercentage, setTipPercentage] = useState(0);
   const [tipAmount, setTipAmount] = useState(0);
@@ -37,11 +34,6 @@ export function CheckoutPage() {
   const subtotal = getCartSubtotal();
   const gst = getGSTAmount();
   const total = subtotal + gst + tipAmount;
-
-  const handleCustomerInfoSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setStep('payment-method');
-  };
 
   const handlePaymentMethodSelect = (method: PaymentMethod) => {
     setPaymentMethod(method);
@@ -77,9 +69,9 @@ export function CheckoutPage() {
           modifiers: item.modifiers.map((m) => m.id),
           special_instructions: item.specialInstructions,
         })),
-        customer_name: customerName || undefined,
-        customer_email: customerEmail || 'guest@lahacienda.com',
-        special_requests: specialRequests || undefined,
+        customer_name: undefined,
+        customer_email: 'guest@lahacienda.com',
+        special_requests: undefined,
       };
 
       const order = await orderService.createOrder(orderData);
@@ -95,7 +87,7 @@ export function CheckoutPage() {
           card_number: '4111111111111111', // Placeholder - will be entered on CityPay page
           expiry_date: '12/25',
           cvv: '123',
-          cardholder_name: customerName || customerEmail,
+          cardholder_name: 'Guest',
           tip_percentage: tipPercentage,
         });
 
@@ -165,10 +157,8 @@ export function CheckoutPage() {
         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center gap-4">
           <button
             onClick={() => {
-              if (step === 'customer-info') {
+              if (step === 'payment-method') {
                 navigate('/');
-              } else if (step === 'payment-method') {
-                setStep('customer-info');
               } else if (step === 'payment-details') {
                 setStep('payment-method');
               } else if (step === 'tip') {
@@ -188,45 +178,6 @@ export function CheckoutPage() {
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-6">
-        {/* Customer Info Step */}
-        {step === 'customer-info' && (
-          <div className="card space-y-4">
-            <h2 className="text-xl font-bold">Your Information</h2>
-            <form onSubmit={handleCustomerInfoSubmit} className="space-y-4">
-              <Input
-                label="Name (optional)"
-                type="text"
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                placeholder="John Doe"
-              />
-              <Input
-                label="Email (optional)"
-                type="email"
-                value={customerEmail}
-                onChange={(e) => setCustomerEmail(e.target.value)}
-                placeholder="john@example.com"
-              />
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Special Requests (optional)
-                </label>
-                <textarea
-                  value={specialRequests}
-                  onChange={(e) => setSpecialRequests(e.target.value)}
-                  placeholder="Any special requests or dietary requirements..."
-                  className="input-field resize-none"
-                  rows={3}
-                />
-              </div>
-              <CartSummary subtotal={subtotal} gst={gst} total={subtotal + gst} />
-              <Button type="submit" fullWidth>
-                Continue
-              </Button>
-            </form>
-          </div>
-        )}
-
         {/* Payment Method Step */}
         {step === 'payment-method' && (
           <div className="card">
