@@ -100,6 +100,94 @@ async def mock_single_payment(
     }
 
 
+@router.post("/process-single/{order_id}")
+async def process_single_payment(
+    order_id: int,
+    payment_data: MockPaymentRequest,
+    background_tasks: BackgroundTasks,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Process single payment using real CityPay integration
+
+    This endpoint creates a CityPay payment intent and returns a payment URL
+    where the customer will be redirected to complete payment on CityPay's
+    secure payment page.
+    """
+
+    # Get order
+    order = await db.get(Order, order_id)
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    if order.status == "paid":
+        raise HTTPException(status_code=400, detail="Order already paid")
+
+    # Calculate tip and total
+    tip = order.subtotal * Decimal(str(payment_data.tip_percentage / 100))
+    total_with_tip = order.subtotal + order.gst_amount + tip
+
+    # Update order with tip and totals
+    order.tip_amount = tip
+    order.total_amount = total_with_tip
+    order.status = "pending_payment"
+
+    # Generate unique split token for this payment
+    split_token = secrets.token_urlsafe(32)
+
+    # Create payment split record
+    payment_split = PaymentSplit(
+        order_id=order_id,
+        split_token=split_token,
+        customer_name=payment_data.cardholder_name,
+        customer_email="",  # Email optional for single payment
+        amount_to_pay=total_with_tip,
+        payment_status="pending",
+        payment_method="card",
+    )
+    db.add(payment_split)
+    await db.flush()
+
+    # Create CityPay payment intent
+    citypay = CityPayService()
+    try:
+        payment_intent = await citypay.create_payment_intent(
+            amount=total_with_tip,
+            order_number=order.order_number,
+            customer_email=payment_data.cardholder_name,  # Using name as identifier
+            split_token=split_token,
+        )
+
+        # Store CityPay reference
+        payment_split.payment_provider_id = payment_intent.get("identifier")
+
+        # Get payment URL from CityPay response
+        payment_url = payment_intent.get("redirect_url", payment_intent.get("payment_url"))
+
+        if not payment_url:
+            raise ValueError("CityPay did not return a payment URL")
+
+        await db.commit()
+
+        return {
+            "message": "Payment intent created successfully",
+            "order_id": order.id,
+            "order_number": order.order_number,
+            "total_amount": float(total_with_tip),
+            "payment_url": payment_url,
+            "split_token": split_token,
+            "status": "pending_payment",
+            "note": "Redirect customer to payment_url to complete payment with CityPay"
+        }
+
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to create payment intent: {str(e)}"
+        )
+
+
 @router.post("/split-equal/{order_id}")
 async def split_payment_equally(
     order_id: int,
