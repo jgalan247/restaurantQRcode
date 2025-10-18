@@ -28,11 +28,56 @@ services:
       - key: ENVIRONMENT
         value: production
       - key: CORS_ORIGINS
-        value: '["https://${_self.HOSTNAME}"]'
+        value: '["https://seahorse-app-zxz5f.ondigitalocean.app","https://${frontend.PUBLIC_URL}","https://${_self.PUBLIC_URL}"]'
+      - key: FRONTEND_URL
+        value: https://seahorse-app-zxz5f.ondigitalocean.app
+      - key: SECRET_KEY
+        scope: RUN_TIME
+        type: SECRET
+        # IMPORTANT: Set this in Digital Ocean dashboard
+        # Generate with: python3 -c "import secrets; print(secrets.token_urlsafe(64))"
+      - key: ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "480"
       - key: GST_RATE
         value: "0.05"
       - key: CURRENCY
         value: GBP
+      - key: RESTAURANT_NAME
+        value: La Hacienda
+      - key: RESTAURANT_ADDRESS
+        value: "123 Mexican Street, London, UK, SW1A 1AA"
+      - key: RESTAURANT_PHONE
+        value: "+44 20 1234 5678"
+      - key: RESTAURANT_EMAIL
+        value: info@lahacienda.co.uk
+      - key: RESTAURANT_VAT_NUMBER
+        value: GB123456789
+      # Payment Gateway - CityPay
+      - key: CITYPAY_MERCHANT_ID
+        scope: RUN_TIME
+        type: SECRET
+      - key: CITYPAY_API_KEY
+        scope: RUN_TIME
+        type: SECRET
+      - key: CITYPAY_BASE_URL
+        value: https://api.citypay.com/v6
+      # Email Service
+      - key: MAIL_USERNAME
+        scope: RUN_TIME
+        type: SECRET
+      - key: MAIL_PASSWORD
+        scope: RUN_TIME
+        type: SECRET
+      - key: MAIL_SERVER
+        value: smtp.sendgrid.net
+      - key: MAIL_FROM
+        value: noreply@lahacienda.co.uk
+      - key: MAIL_PORT
+        value: "587"
+      - key: MAIL_FROM_NAME
+        value: La Hacienda Restaurant
 
   - name: frontend
     source_dir: frontend
