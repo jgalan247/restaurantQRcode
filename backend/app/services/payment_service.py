@@ -24,6 +24,10 @@ class CityPayService:
     ) -> Dict[str, Any]:
         """Create CityPay PayLink token"""
 
+        print(f"🔵 CITYPAY: Creating payment for order {order_number}")
+        print(f"🔵 CITYPAY: Base URL = {self.base_url}")
+        print(f"🔵 CITYPAY: Merchant ID = {self.merchant_id}")
+
         # Convert to cents/pence
         amount_in_cents = int(amount * 100)
 
@@ -51,6 +55,10 @@ class CityPayService:
         }
 
         # Log the request for debugging
+        print(f"🔵 CITYPAY: Full URL = {self.base_url}/paylink3/create")
+        print(f"🔵 CITYPAY: Amount = {amount_in_cents} pence (£{amount})")
+        print(f"🔵 CITYPAY: Payload = {payload}")
+
         logger.info(f"Creating CityPay PayLink token for order {order_number}")
         logger.info(f"CityPay URL: {self.base_url}/paylink3/create")
         logger.info(f"Amount: {amount_in_cents} pence (£{amount})")
@@ -67,12 +75,16 @@ class CityPayService:
                 )
 
                 # Log response for debugging
+                print(f"🔵 CITYPAY: Response Status = {response.status_code}")
+                print(f"🔵 CITYPAY: Response Body = {response.text[:500]}")
+
                 logger.info(f"CityPay Response Status: {response.status_code}")
                 logger.info(f"CityPay Response: {response.text[:500]}")  # First 500 chars
 
                 response.raise_for_status()
                 response_data = response.json()
 
+                print(f"🔵 CITYPAY: Payment URL = {response_data.get('url')}")
                 logger.info(f"CityPay PayLink token created successfully")
 
                 # Extract the payment URL from the response
@@ -87,10 +99,13 @@ class CityPayService:
                 }
 
         except httpx.HTTPStatusError as e:
+            print(f"🔴 CITYPAY ERROR: HTTP {e.response.status_code}")
+            print(f"🔴 CITYPAY ERROR: {e.response.text}")
             logger.error(f"CityPay API HTTP error: {e.response.status_code}")
             logger.error(f"CityPay error response: {e.response.text}")
             raise ValueError(f"CityPay API error ({e.response.status_code}): {e.response.text}")
         except httpx.HTTPError as e:
+            print(f"🔴 CITYPAY ERROR: Connection error - {str(e)}")
             logger.error(f"CityPay API connection error: {str(e)}")
             raise ValueError(f"Payment processing failed: {str(e)}")
 
