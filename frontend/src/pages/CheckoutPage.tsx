@@ -88,8 +88,12 @@ export function CheckoutPage() {
 
       const order = await orderService.createOrder(orderData);
 
+      console.log('Order created:', order);
+      console.log('Payment method selected:', paymentMethod);
+
       // Create payment based on method
       if (paymentMethod === PaymentMethod.SINGLE) {
+        console.log('Creating single payment for order:', order.id);
         // For single payment, create payment intent and redirect to CityPay
         const paymentResponse = await paymentService.createSinglePayment(order.id, {
           card_number: '4111111111111111', // Placeholder - will be entered on CityPay page
