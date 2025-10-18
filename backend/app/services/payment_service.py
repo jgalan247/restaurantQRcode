@@ -31,6 +31,9 @@ class CityPayService:
         # Convert to cents/pence
         amount_in_cents = int(amount * 100)
 
+        # Ensure email is valid format
+        valid_email = customer_email if (customer_email and '@' in customer_email) else "guest@lahacienda.com"
+
         payload = {
             "merchantId": int(self.merchant_id),
             "licenceKey": self.api_key,
@@ -38,7 +41,7 @@ class CityPayService:
             "identifier": order_number,
             "test": True,  # Set to True for sandbox/testing
             "cardholder": {
-                "email": customer_email if customer_email else "guest@lahacienda.com",
+                "email": valid_email,
             },
             "config": {
                 "redirect_success": f"{settings.FRONTEND_URL}/payment/success?token={split_token}",
