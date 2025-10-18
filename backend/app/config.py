@@ -36,7 +36,7 @@ class Settings(BaseSettings):
     # Business Logic
     GST_RATE: float = 0.05  # 5%
     CURRENCY: str = "GBP"
-    FRONTEND_URL: str  # Required - must be set in environment variables
+    FRONTEND_URL: str = "https://seahorse-app-zxz5f.ondigitalocean.app"  # Production URL
 
     # Restaurant Details (for invoices)
     RESTAURANT_NAME: str = "La Hacienda"
