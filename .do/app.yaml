@@ -14,12 +14,11 @@ services:
     github:
       branch: feature/complete-admin-system
       deploy_on_push: true
-    build_command: npm install && npm run build
+    build_command: rm -rf node_modules dist && npm install && npm run build
     output_dir: dist
     static_site: true
     routes:
       - path: /
-        preserve_path_prefix: false
     envs:
       - key: VITE_API_URL
         scope: BUILD_TIME
