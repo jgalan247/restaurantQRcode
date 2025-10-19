@@ -168,7 +168,8 @@ if static_path.exists():
     app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Include API router
-app.include_router(api_router, prefix="/api/v1")
+# Note: Digital Ocean strips /api prefix, so we only use /v1 here
+app.include_router(api_router, prefix="/v1")
 
 
 # Health check endpoint
