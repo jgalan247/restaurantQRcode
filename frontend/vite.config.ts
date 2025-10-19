@@ -15,4 +15,5 @@ export default defineConfig({
   resolve: {
     dedupe: ['react', 'react-dom'],
   },
+  publicDir: 'public', // Ensure public folder is copied to dist
 })

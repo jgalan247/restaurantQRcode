@@ -1,0 +1,4 @@
+static_files:
+  - location: /
+    directory: /
+    fallback_document: index.html
