@@ -23,7 +23,7 @@ services:
     envs:
       - key: VITE_API_URL
         scope: BUILD_TIME
-        value: ${backend.PUBLIC_URL}/api/v1
+        value: https://seahorse-app-zxz5f.ondigitalocean.app/api/v1
       - key: VITE_APP_NAME
         scope: BUILD_TIME
         value: La Hacienda
@@ -40,7 +40,7 @@ services:
     instance_size_slug: basic-xxs
     instance_count: 1
     routes:
-      - path: /api/v1
+      - path: /api
     envs:
       - key: DATABASE_URL
         scope: RUN_TIME
