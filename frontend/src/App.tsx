@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { CartProvider } from './context/CartContext';
 import { MenuPage } from './pages/MenuPage';
@@ -20,7 +20,7 @@ import ProtectedRoute from './components/admin/ProtectedRoute';
 
 function App() {
   return (
-    <BrowserRouter
+    <HashRouter
       future={{
         v7_startTransition: true,
         v7_relativeSplatPath: true,
@@ -72,7 +72,7 @@ function App() {
           />
         </CartProvider>
       </MexicanBackground>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 
