@@ -87,6 +87,9 @@ services:
     build_command: npm install && npm run build
     output_dir: dist
     static_site: true
+    routes:
+      - path: /
+        preserve_path_prefix: false
     envs:
       - key: VITE_API_URL
         scope: BUILD_TIME
