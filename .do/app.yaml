@@ -9,6 +9,26 @@ databases:
     version: "15"
 
 services:
+  - name: frontend
+    source_dir: frontend
+    github:
+      branch: feature/complete-admin-system
+      deploy_on_push: true
+    build_command: npm install && npm run build
+    output_dir: dist
+    static_site: true
+    routes:
+      - path: /
+        preserve_path_prefix: false
+    envs:
+      - key: VITE_API_URL
+        scope: BUILD_TIME
+        value: ${backend.PUBLIC_URL}/api/v1
+      - key: VITE_APP_NAME
+        scope: BUILD_TIME
+        value: La Hacienda
+    # Environment vars must be available at BUILD_TIME for Vite
+
   - name: backend
     source_dir: backend
     github:
@@ -21,7 +41,6 @@ services:
     instance_count: 1
     routes:
       - path: /api
-        preserve_path_prefix: true
     envs:
       - key: DATABASE_URL
         scope: RUN_TIME
@@ -81,23 +100,3 @@ services:
         value: "587"
       - key: MAIL_FROM_NAME
         value: La Hacienda Restaurant
-
-  - name: frontend
-    source_dir: frontend
-    github:
-      branch: feature/complete-admin-system
-      deploy_on_push: true
-    build_command: npm install && npm run build
-    output_dir: dist
-    static_site: true
-    routes:
-      - path: /
-        preserve_path_prefix: false
-    envs:
-      - key: VITE_API_URL
-        scope: BUILD_TIME
-        value: ${backend.PUBLIC_URL}/api/v1
-      - key: VITE_APP_NAME
-        scope: BUILD_TIME
-        value: La Hacienda
-    # Environment vars must be available at BUILD_TIME for Vite
