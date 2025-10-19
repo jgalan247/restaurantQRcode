@@ -17,7 +17,7 @@ services:
     build_command: rm -rf node_modules dist && npm install && npm run build
     output_dir: dist
     static_site: true
-    error_document: index.html
+    catchall_document: index.html
     routes:
       - path: /
     envs:
