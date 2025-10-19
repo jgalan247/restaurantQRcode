@@ -16,7 +16,7 @@ export const SimpleBudgetBuilderModal: React.FC<SimpleBudgetBuilderModalProps> =
   isOpen,
   onClose,
 }) => {
-  const { addItem: _addItem } = useCart();  // Prefix with underscore if unused
+  const { addItem } = useCart();
   const [budget, setBudget] = useState(30);
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<{ meal_combos: MealCombo[]; chef_combos: ChefCombo[] } | null>(null);
@@ -40,12 +40,61 @@ export const SimpleBudgetBuilderModal: React.FC<SimpleBudgetBuilderModalProps> =
   };
 
   const handleAddComboToCart = (combo: MealCombo) => {
-    combo.items.forEach((item) => {
-      // Find the menu item by ID and add to cart
-      // For MVP, we'll just show a toast
-      toast.success(`Added ${item.name} to cart`);
-    });
-    toast.success(`Added ${combo.name} combo to cart!`);
+    try {
+      combo.items.forEach((item) => {
+        // Convert ComboItem to MenuItem format expected by cart
+        const menuItem = {
+          id: item.id,
+          name: item.name,
+          description: item.description || '',
+          price: item.price,
+          dietary_tags: item.dietary_tags || [],
+          is_available: true,
+          allergens: item.allergens || [],
+          category_id: undefined,
+          image_url: item.image_url,
+        };
+
+        // Add item to cart with no modifiers
+        addItem(menuItem, [], undefined, undefined);
+      });
+      toast.success(`Added ${combo.name} combo to cart!`);
+      onClose(); // Close the modal after adding
+    } catch (error) {
+      console.error('Failed to add combo to cart:', error);
+      toast.error('Failed to add combo to cart');
+    }
+  };
+
+  const handleAddChefComboToCart = (combo: ChefCombo) => {
+    try {
+      combo.items.forEach((comboItem) => {
+        const { menu_item, quantity } = comboItem;
+
+        // Convert to MenuItem format
+        const menuItem = {
+          id: menu_item.id,
+          name: menu_item.name,
+          description: menu_item.description || '',
+          price: menu_item.price,
+          dietary_tags: menu_item.dietary_tags || [],
+          is_available: true,
+          allergens: menu_item.allergens || [],
+          category_id: menu_item.category_id,
+          image_url: menu_item.image_url,
+        };
+
+        // Add item to cart multiple times based on quantity
+        for (let i = 0; i < quantity; i++) {
+          addItem(menuItem, [], undefined, undefined);
+        }
+      });
+      toast.success(`Added ${combo.name} to cart!`);
+      onClose(); // Close the modal after adding
+    } catch (error) {
+      console.error('Failed to add chef combo to cart:', error);
+      toast.error('Failed to add combo to cart');
+    }
   };
 
   return (
@@ -173,7 +222,7 @@ export const SimpleBudgetBuilderModal: React.FC<SimpleBudgetBuilderModalProps> =
                         <span className="text-lg font-bold text-purple-700">
                           {formatCurrency(combo.price)}
                         </span>
-                        <Button size="sm" variant="secondary">
+                        <Button size="sm" variant="secondary" onClick={() => handleAddChefComboToCart(combo)}>
                           <Plus size={16} className="mr-1" />
                           Add
                         </Button>
