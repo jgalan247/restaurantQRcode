@@ -21,8 +21,8 @@ export function CheckoutPage() {
   const navigate = useNavigate();
   const { state, getCartSubtotal, getGSTAmount, clearCart } = useCart();
 
-  const [step, setStep] = useState<Step>('payment-method');
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null);
+  const [step, setStep] = useState<Step>('tip');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(PaymentMethod.SINGLE);
   const [tipPercentage, setTipPercentage] = useState(0);
   const [tipAmount, setTipAmount] = useState(0);
   const [splitEmails, setSplitEmails] = useState<string[]>([]);
@@ -156,19 +156,7 @@ export function CheckoutPage() {
       <header className="on-gradient-bg shadow-sm">
         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center gap-4">
           <button
-            onClick={() => {
-              if (step === 'payment-method') {
-                navigate('/');
-              } else if (step === 'payment-details') {
-                setStep('payment-method');
-              } else if (step === 'tip') {
-                if (paymentMethod === PaymentMethod.SINGLE) {
-                  setStep('payment-method');
-                } else {
-                  setStep('payment-details');
-                }
-              }
-            }}
+            onClick={() => navigate('/')}
             className="p-2 hover:bg-gray-100 rounded-lg"
           >
             <ArrowLeft size={24} />
@@ -216,16 +204,10 @@ export function CheckoutPage() {
             <div className="flex gap-3">
               <Button
                 variant="secondary"
-                onClick={() => {
-                  if (paymentMethod === PaymentMethod.SINGLE) {
-                    setStep('payment-method');
-                  } else {
-                    setStep('payment-details');
-                  }
-                }}
+                onClick={() => navigate('/')}
                 fullWidth
               >
-                Back
+                Back to Menu
               </Button>
               <Button onClick={handleFinalSubmit} fullWidth>
                 Place Order
