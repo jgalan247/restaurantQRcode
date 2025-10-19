@@ -44,8 +44,8 @@ class CityPayService:
                 "email": valid_email,
             },
             "config": {
-                "redirect_success": f"{settings.FRONTEND_URL}/payment/success?token={split_token}",
-                "redirect_failure": f"{settings.FRONTEND_URL}/payment/failure?token={split_token}",
+                "redirect_success": f"{settings.FRONTEND_URL}/payment-success?token={split_token}",
+                "redirect_failure": f"{settings.FRONTEND_URL}/payment-failure?token={split_token}",
                 "redirect_cancel": f"{settings.FRONTEND_URL}/checkout",
             },
             "cart": {
