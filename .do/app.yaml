@@ -56,10 +56,10 @@ services:
         value: GB123456789
       # Payment Gateway - CityPay
       - key: CITYPAY_MERCHANT_ID
-        scope: RUN_TIME
+        scope: RUN_AND_BUILD_TIME
         type: SECRET
       - key: CITYPAY_API_KEY
-        scope: RUN_TIME
+        scope: RUN_AND_BUILD_TIME
         type: SECRET
       - key: CITYPAY_BASE_URL
         value: https://secure.citypay.com
