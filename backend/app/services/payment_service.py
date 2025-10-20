@@ -52,10 +52,11 @@ class CityPayService:
                 response.raise_for_status()
                 auth_data = response.json()
 
-                # Cache the API key
-                self._api_key_cache = auth_data.get("api_key")
+                # Cache the API key (CityPay returns it as "key" field)
+                self._api_key_cache = auth_data.get("key")
 
                 print(f"🔵 CITYPAY AUTH: Successfully authenticated")
+                print(f"🔵 CITYPAY AUTH: API Key = {self._api_key_cache[:20]}..." if self._api_key_cache else "🔴 No API key in response")
                 return self._api_key_cache
 
         except httpx.HTTPStatusError as e:
@@ -117,12 +118,12 @@ class CityPayService:
         }
 
         # Log the request for debugging
-        print(f"🔵 CITYPAY: Full URL = {self.base_url}/paylink3/create")
+        print(f"🔵 CITYPAY: Full URL = {self.base_url}/paylink/create")
         print(f"🔵 CITYPAY: Amount = {amount_in_cents} pence (£{amount})")
         print(f"🔵 CITYPAY: Payload = {payload}")
 
         logger.info(f"Creating CityPay PayLink token for order {order_number}")
-        logger.info(f"CityPay URL: {self.base_url}/paylink3/create")
+        logger.info(f"CityPay URL: {self.base_url}/paylink/create")
         logger.info(f"Amount: {amount_in_cents} pence (£{amount})")
         logger.info(f"Merchant ID: {self.merchant_id}")
         logger.info(f"Payload: {payload}")
@@ -130,7 +131,7 @@ class CityPayService:
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.post(
-                    f"{self.base_url}/paylink3/create",
+                    f"{self.base_url}/paylink/create",
                     json=payload,
                     headers=headers,
                     timeout=30.0,
