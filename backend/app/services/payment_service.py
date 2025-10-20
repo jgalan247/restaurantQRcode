@@ -94,14 +94,13 @@ class CityPayService:
         # Ensure email is valid format
         valid_email = customer_email if (customer_email and '@' in customer_email) else "guest@lahacienda.com"
 
-        # Get authenticated API key
-        api_key = await self._get_api_key()
-
         # PayLink uses a different base URL than v6 API
         paylink_base_url = self._get_paylink_base_url()
 
+        # PayLink v3 uses merchantId and licenceKey in payload (not cp-api-key header)
         payload = {
-            "merchantid": int(self.merchant_id),
+            "merchantId": int(self.merchant_id),  # PayLink v3 uses camelCase
+            "licenceKey": self.licence_key,  # PayLink v3 expects licence key in payload
             "amount": amount_in_cents,
             "identifier": order_number,
             "test": True,  # Set to True for sandbox/testing
@@ -127,17 +126,25 @@ class CityPayService:
 
         headers = {
             "Content-Type": "application/json",
-            "cp-api-key": api_key,  # Use authenticated API key
+            # PayLink v3 doesn't use cp-api-key header, credentials are in payload
         }
 
-        # PayLink v3 endpoint
-        paylink_url = f"{paylink_base_url}/paylink3/create"
+        # Try different PayLink endpoint variants
+        # CityPay documentation is unclear about sandbox endpoint
+        paylink_endpoints = [
+            f"{paylink_base_url}/paylink3/create",  # PayLink v3 (documented)
+            f"{paylink_base_url}/paylink/create",   # Generic PayLink
+            f"{paylink_base_url}/v3/paylink/create", # v3 prefix variant
+        ]
+
+        paylink_url = paylink_endpoints[0]  # Try first endpoint
 
         # Log the request for debugging
         print(f"🔵 CITYPAY: PayLink Base URL = {paylink_base_url}")
         print(f"🔵 CITYPAY: Full PayLink URL = {paylink_url}")
         print(f"🔵 CITYPAY: Amount = {amount_in_cents} pence (£{amount})")
         print(f"🔵 CITYPAY: Payload = {payload}")
+        print(f"🔵 CITYPAY: Note - Using PayLink v3 auth (merchantId + licenceKey in payload)")
 
         logger.info(f"Creating CityPay PayLink token for order {order_number}")
         logger.info(f"CityPay PayLink URL: {paylink_url}")
