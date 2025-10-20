@@ -1,7 +1,8 @@
 import httpx
 from decimal import Decimal
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 import logging
+import base64
 
 from app.config import get_settings
 
@@ -13,7 +14,55 @@ class CityPayService:
     def __init__(self):
         self.base_url = settings.CITYPAY_BASE_URL
         self.merchant_id = settings.CITYPAY_MERCHANT_ID
-        self.api_key = settings.CITYPAY_API_KEY
+        self.client_id = settings.CITYPAY_CLIENT_ID
+        self.licence_key = settings.CITYPAY_LICENCE_KEY
+        self._api_key_cache: Optional[str] = None
+
+    async def _get_api_key(self) -> str:
+        """
+        Authenticate with CityPay and get a temporary API key
+        CityPay v6 requires calling /authenticate to get a cp-api-key
+        """
+        if self._api_key_cache:
+            return self._api_key_cache
+
+        print(f"🔵 CITYPAY: Authenticating with client_id={self.client_id}")
+
+        payload = {
+            "client_id": self.client_id,
+            "licence_key": self.licence_key
+        }
+
+        headers = {
+            "Content-Type": "application/json",
+        }
+
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    f"{self.base_url}/authenticate",
+                    json=payload,
+                    headers=headers,
+                    timeout=30.0,
+                )
+
+                print(f"🔵 CITYPAY AUTH: Response Status = {response.status_code}")
+                print(f"🔵 CITYPAY AUTH: Response = {response.text[:500]}")
+
+                response.raise_for_status()
+                auth_data = response.json()
+
+                # Cache the API key
+                self._api_key_cache = auth_data.get("api_key")
+
+                print(f"🔵 CITYPAY AUTH: Successfully authenticated")
+                return self._api_key_cache
+
+        except httpx.HTTPStatusError as e:
+            print(f"🔴 CITYPAY AUTH ERROR: HTTP {e.response.status_code}")
+            print(f"🔴 CITYPAY AUTH ERROR: {e.response.text}")
+            logger.error(f"CityPay authentication error: {e.response.status_code} - {e.response.text}")
+            raise ValueError(f"CityPay authentication failed: {e.response.text}")
 
     async def create_payment_intent(
         self,
@@ -34,9 +83,11 @@ class CityPayService:
         # Ensure email is valid format
         valid_email = customer_email if (customer_email and '@' in customer_email) else "guest@lahacienda.com"
 
+        # Get authenticated API key
+        api_key = await self._get_api_key()
+
         payload = {
-            "merchantId": int(self.merchant_id),
-            "licenceKey": self.api_key,
+            "merchantid": int(self.merchant_id),
             "amount": amount_in_cents,
             "identifier": order_number,
             "test": True,  # Set to True for sandbox/testing
@@ -62,6 +113,7 @@ class CityPayService:
 
         headers = {
             "Content-Type": "application/json",
+            "cp-api-key": api_key,  # Use authenticated API key
         }
 
         # Log the request for debugging

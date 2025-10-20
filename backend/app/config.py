@@ -20,10 +20,11 @@ class Settings(BaseSettings):
     # CORS
     CORS_ORIGINS: str = '["http://localhost:5173","http://localhost:3000"]'
 
-    # CityPay PayLink
-    CITYPAY_MERCHANT_ID: str
-    CITYPAY_API_KEY: str  # This is the licenceKey
-    CITYPAY_BASE_URL: str = "https://secure.citypay.com"
+    # CityPay PayLink v6
+    CITYPAY_MERCHANT_ID: str  # Merchant Account ID
+    CITYPAY_CLIENT_ID: str  # Client ID from CityPay
+    CITYPAY_LICENCE_KEY: str  # Client Licence Key from CityPay
+    CITYPAY_BASE_URL: str = "https://api.citypay.com/v6"  # v6 API endpoint
 
     # Email
     MAIL_USERNAME: str
