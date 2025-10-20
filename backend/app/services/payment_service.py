@@ -20,13 +20,12 @@ class CityPayService:
 
     def _get_paylink_base_url(self) -> str:
         """
-        Get the PayLink base URL based on the v6 API URL
-        PayLink v3 uses a different endpoint structure than v6 API
+        Get the PayLink base URL
+        PayLink v3 uses the same URL for both production and sandbox
+        The 'test' flag in the payload determines if it's a test transaction
         """
-        if "sandbox" in self.base_url:
-            return "https://sandbox.citypay.com"
-        else:
-            return "https://secure.citypay.com"
+        # PayLink always uses secure.citypay.com for both prod and test
+        return "https://secure.citypay.com"
 
     async def _get_api_key(self) -> str:
         """
