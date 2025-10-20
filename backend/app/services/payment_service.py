@@ -200,7 +200,8 @@ class CityPayService:
 
     async def verify_payment(self, transaction_id: str) -> Dict[str, Any]:
         """Verify payment status"""
-        headers = {"Authorization": f"Bearer {self.api_key}"}
+        api_key = await self._get_api_key()
+        headers = {"cp-api-key": api_key}
 
         async with httpx.AsyncClient() as client:
             response = await client.get(
@@ -213,6 +214,7 @@ class CityPayService:
         self, transaction_id: str, amount: Decimal
     ) -> Dict[str, Any]:
         """Process refund"""
+        api_key = await self._get_api_key()
         amount_in_cents = int(amount * 100)
 
         payload = {
@@ -222,7 +224,7 @@ class CityPayService:
         }
 
         headers = {
-            "Authorization": f"Bearer {self.api_key}",
+            "cp-api-key": api_key,
             "Content-Type": "application/json",
         }
 

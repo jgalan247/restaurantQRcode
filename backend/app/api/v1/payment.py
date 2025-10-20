@@ -62,8 +62,9 @@ async def test_citypay_connection():
     return {
         "citypay_base_url": citypay.base_url,
         "merchant_id": citypay.merchant_id[:4] + "****" if len(citypay.merchant_id) > 4 else "****",
-        "api_key_set": bool(citypay.api_key and len(citypay.api_key) > 0),
-        "api_key_preview": citypay.api_key[:10] + "****" if len(citypay.api_key) > 10 else "****",
+        "client_id_set": bool(citypay.client_id and len(citypay.client_id) > 0),
+        "client_id_preview": citypay.client_id[:10] + "****" if len(citypay.client_id) > 10 else "****",
+        "licence_key_set": bool(citypay.licence_key and len(citypay.licence_key) > 0),
         "currency": settings.CURRENCY,
         "frontend_url": settings.FRONTEND_URL,
         "server_outbound_ips": outbound_ips,
