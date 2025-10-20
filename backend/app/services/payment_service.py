@@ -18,6 +18,16 @@ class CityPayService:
         self.licence_key = settings.CITYPAY_LICENCE_KEY
         self._api_key_cache: Optional[str] = None
 
+    def _get_paylink_base_url(self) -> str:
+        """
+        Get the PayLink base URL based on the v6 API URL
+        PayLink v3 uses a different endpoint structure than v6 API
+        """
+        if "sandbox" in self.base_url:
+            return "https://sandbox.citypay.com"
+        else:
+            return "https://secure.citypay.com"
+
     async def _get_api_key(self) -> str:
         """
         Authenticate with CityPay and get a temporary API key
@@ -87,6 +97,9 @@ class CityPayService:
         # Get authenticated API key
         api_key = await self._get_api_key()
 
+        # PayLink uses a different base URL than v6 API
+        paylink_base_url = self._get_paylink_base_url()
+
         payload = {
             "merchantid": int(self.merchant_id),
             "amount": amount_in_cents,
@@ -117,13 +130,17 @@ class CityPayService:
             "cp-api-key": api_key,  # Use authenticated API key
         }
 
+        # PayLink v3 endpoint
+        paylink_url = f"{paylink_base_url}/paylink3/create"
+
         # Log the request for debugging
-        print(f"🔵 CITYPAY: Full URL = {self.base_url}/paylink/create")
+        print(f"🔵 CITYPAY: PayLink Base URL = {paylink_base_url}")
+        print(f"🔵 CITYPAY: Full PayLink URL = {paylink_url}")
         print(f"🔵 CITYPAY: Amount = {amount_in_cents} pence (£{amount})")
         print(f"🔵 CITYPAY: Payload = {payload}")
 
         logger.info(f"Creating CityPay PayLink token for order {order_number}")
-        logger.info(f"CityPay URL: {self.base_url}/paylink/create")
+        logger.info(f"CityPay PayLink URL: {paylink_url}")
         logger.info(f"Amount: {amount_in_cents} pence (£{amount})")
         logger.info(f"Merchant ID: {self.merchant_id}")
         logger.info(f"Payload: {payload}")
@@ -131,7 +148,7 @@ class CityPayService:
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.post(
-                    f"{self.base_url}/paylink/create",
+                    paylink_url,
                     json=payload,
                     headers=headers,
                     timeout=30.0,
