@@ -93,10 +93,13 @@ class CityPayService:
         # Ensure email is valid format
         valid_email = customer_email if (customer_email and '@' in customer_email) else "guest@lahacienda.com"
 
+        # Get v6 API key for authentication (might help with IP whitelisting)
+        api_key = await self._get_api_key()
+
         # PayLink uses a different base URL than v6 API
         paylink_base_url = self._get_paylink_base_url()
 
-        # PayLink v3 uses merchantId and licenceKey in payload (not cp-api-key header)
+        # PayLink v3 uses merchantId and licenceKey in payload
         payload = {
             "merchantId": int(self.merchant_id),  # PayLink v3 uses camelCase
             "licenceKey": self.licence_key,  # PayLink v3 expects licence key in payload
@@ -125,7 +128,7 @@ class CityPayService:
 
         headers = {
             "Content-Type": "application/json",
-            # PayLink v3 doesn't use cp-api-key header, credentials are in payload
+            "cp-api-key": api_key,  # Try including v6 API key for authentication
         }
 
         # Try different PayLink endpoint variants
