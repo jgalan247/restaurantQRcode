@@ -14,7 +14,7 @@ from typing import Optional, Dict, Any
 from decimal import Decimal
 
 from app.config import get_settings
-from app.utils.citypay_auth import generate_api_key
+from citypay.models.api_key import api_key_generate
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -40,9 +40,9 @@ class CityPayPaylinkService:
             host=settings.CITYPAY_BASE_URL
         )
 
-        # Generate temporal API key using HMAC-SHA256
-        # CityPay requires: base64(clientId:nonce:hash) where hash = HMAC-SHA256(clientId+nonce+timestamp, licenceKey)
-        api_key = generate_api_key(settings.CITYPAY_CLIENT_ID, settings.CITYPAY_LICENCE_KEY)
+        # Generate temporal API key using CityPay's official api_key_generate function
+        # This generates: base64(clientId:nonce:hash) where hash = HMAC-SHA256
+        api_key = api_key_generate(settings.CITYPAY_CLIENT_ID, settings.CITYPAY_LICENCE_KEY)
         self.configuration.api_key["cp-api-key"] = api_key
 
         # Store merchant ID
@@ -52,7 +52,7 @@ class CityPayPaylinkService:
         logger.info(f"🔵 Host: {settings.CITYPAY_BASE_URL}")
         logger.info(f"🔵 Merchant ID: {self.merchant_id}")
         logger.info(f"🔵 Client ID: {settings.CITYPAY_CLIENT_ID}")
-        logger.info(f"🔵 API Key generated (HMAC-SHA256): {api_key[:30]}...")
+        logger.info(f"🔵 API Key generated using official SDK: {api_key[:30]}...")
 
     def create_paylink_token(
         self,
