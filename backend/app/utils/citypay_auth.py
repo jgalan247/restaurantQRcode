@@ -13,10 +13,10 @@ from datetime import datetime, timezone
 def generate_api_key(client_id: str, licence_key: str) -> str:
     """
     Generate a temporal CityPay API key for cp-api-key authentication.
+    Implementation based on CityPay's official Python SDK.
 
-    The key format is: base64(clientId:nonce:hash)
-    Where hash = HMAC-SHA256(message, licence_key)
-    And message = clientId + nonce + timestamp
+    The key format is: base64(clientId:nonce_hex:digest_hex)
+    Where digest = HMAC-SHA256(clientId_bytes + nonce_bytes + timestamp_bytes, licence_key)
 
     Args:
         client_id: Your CityPay client ID (e.g., "PC603250")
@@ -29,28 +29,30 @@ def generate_api_key(client_id: str, licence_key: str) -> str:
         >>> api_key = generate_api_key("PC603250", "your-licence-key")
         >>> configuration.api_key['cp-api-key'] = api_key
     """
-    # Generate 256-bit (32-byte) random nonce, convert to hex string
-    nonce = secrets.token_hex(32)  # 64 hex characters = 256 bits
+    # Generate 16-byte (128-bit) random nonce
+    nonce = secrets.token_bytes(16)
 
     # Get current UTC time in yyyyMMddHHmm format
     utc_now = datetime.now(timezone.utc)
     timestamp = utc_now.strftime("%Y%m%d%H%M")
 
-    # Create message: clientId + nonce + timestamp
-    message = f"{client_id}{nonce}{timestamp}"
+    # Create message: clientId (UTF-8 bytes) + nonce (raw bytes) + timestamp (hex bytes)
+    message = bytearray()
+    message.extend(client_id.encode('utf-8'))
+    message.extend(nonce)
+    message.extend(bytearray.fromhex(timestamp.encode('utf-8').hex()))
 
-    # Generate HMAC-SHA256 hash
-    hash_bytes = hmac.new(
+    # Generate HMAC-SHA256 digest
+    digest = hmac.new(
         key=licence_key.encode('utf-8'),
-        msg=message.encode('utf-8'),
+        msg=bytes(message),
         digestmod=hashlib.sha256
     ).digest()
 
-    # Convert hash to hex string
-    hash_hex = hash_bytes.hex()
-
-    # Create packet: clientId:nonce:hash
-    packet = f"{client_id}:{nonce}:{hash_hex}"
+    # Create packet: clientId:nonce_hex:digest_hex
+    nonce_hex = nonce.hex().upper()
+    digest_hex = digest.hex().upper()
+    packet = f"{client_id}:{nonce_hex}:{digest_hex}"
 
     # Base64 encode the packet
     api_key = base64.b64encode(packet.encode('utf-8')).decode('utf-8')
