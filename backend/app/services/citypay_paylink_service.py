@@ -16,6 +16,7 @@ from decimal import Decimal
 from app.config import get_settings
 
 # Configure logging
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Get settings
@@ -31,17 +32,22 @@ class CityPayPaylinkService:
     """
 
     def __init__(self):
-        # Configure CityPay SDK
+        # Configure CityPay SDK - IMPORTANT: Use correct base URL
+        # For sandbox: https://sandbox.citypay.com
+        # For production: https://api.citypay.com
         self.configuration = citypay.Configuration(
             host=settings.CITYPAY_BASE_URL
         )
-        # Set API key for authentication
+        # Set API key for authentication (use licence key, not client_id)
         self.configuration.api_key["cp-api-key"] = settings.CITYPAY_LICENCE_KEY
 
         # Store merchant ID
         self.merchant_id = int(settings.CITYPAY_MERCHANT_ID)
 
-        logger.info(f"CityPay PayLink initialized with merchant ID: {self.merchant_id}")
+        logger.info(f"🔵 CityPay PayLink SDK initialized")
+        logger.info(f"🔵 Host: {settings.CITYPAY_BASE_URL}")
+        logger.info(f"🔵 Merchant ID: {self.merchant_id}")
+        logger.info(f"🔵 API Key set: {bool(settings.CITYPAY_LICENCE_KEY)}")
 
     def create_paylink_token(
         self,
@@ -109,7 +115,7 @@ class CityPayPaylinkService:
         cart = citypay.PaylinkCart(
             items=[
                 citypay.PaylinkCartItemModel(
-                    label=order_description,
+                    description=order_description,
                     amount=amount_pence,
                     quantity=1
                 )

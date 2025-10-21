@@ -4,8 +4,11 @@ from sqlalchemy import select
 from datetime import datetime
 from decimal import Decimal
 import secrets
+import logging
 
 from app.api.deps import get_db
+
+logger = logging.getLogger(__name__)
 from app.schemas.order import SplitEqualRequest, SplitByItemsRequest, PaymentSplitResponse
 from app.services.citypay_paylink_service import CityPayPaylinkService
 from app.services.citypay_service import CityPayService as MockCityPayService
