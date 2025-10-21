@@ -71,6 +71,30 @@ async def health_check():
     }
 
 
+# Check outbound IP endpoint (for CityPay whitelisting verification)
+@app.get("/check-outbound-ip")
+async def check_outbound_ip():
+    """
+    Check what outbound IP address this server is using.
+    This is the IP that CityPay will see when we make API calls to them.
+    """
+    import httpx
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get("https://api.ipify.org?format=json", timeout=10.0)
+            ip_data = response.json()
+            return {
+                "outbound_ip": ip_data.get("ip"),
+                "message": "This is the IP that CityPay will see",
+                "note": "Provide this IP to CityPay for whitelisting"
+            }
+    except Exception as e:
+        return {
+            "error": str(e),
+            "message": "Could not retrieve outbound IP"
+        }
+
+
 # Root endpoint
 @app.get("/")
 async def root():
