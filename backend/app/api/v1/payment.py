@@ -7,7 +7,7 @@ import secrets
 
 from app.api.deps import get_db
 from app.schemas.order import SplitEqualRequest, SplitByItemsRequest, PaymentSplitResponse
-from app.services.payment_service import CityPayService
+from app.services.citypay_paylink_service import CityPayPaylinkService
 from app.services.citypay_service import CityPayService as MockCityPayService
 from app.services.email_service import send_payment_link_email
 from app.models.payment import PaymentSplit
@@ -27,7 +27,7 @@ async def test_citypay_connection():
     """
     import httpx
 
-    citypay = CityPayService()
+    citypay = CityPayPaylinkService()
 
     # Get server's outbound IP address from multiple sources
     outbound_ips = {}
@@ -60,16 +60,17 @@ async def test_citypay_connection():
         outbound_ips["icanhazip"] = "error"
 
     return {
-        "citypay_base_url": citypay.base_url,
-        "merchant_id": citypay.merchant_id[:4] + "****" if len(citypay.merchant_id) > 4 else "****",
-        "client_id_set": bool(citypay.client_id and len(citypay.client_id) > 0),
-        "client_id_preview": citypay.client_id[:10] + "****" if len(citypay.client_id) > 10 else "****",
-        "licence_key_set": bool(citypay.licence_key and len(citypay.licence_key) > 0),
+        "citypay_base_url": citypay.configuration.host,
+        "merchant_id": str(citypay.merchant_id),
+        "merchant_id_preview": str(citypay.merchant_id)[:4] + "****" if len(str(citypay.merchant_id)) > 4 else "****",
+        "licence_key_set": bool(citypay.configuration.api_key.get("cp-api-key")),
         "currency": settings.CURRENCY,
         "frontend_url": settings.FRONTEND_URL,
         "server_outbound_ips": outbound_ips,
-        "status": "Configuration loaded - ready to test payment",
-        "note": "Whitelist ALL outbound IPs shown above in CityPay merchant portal"
+        "integration_type": "PayLink (Official SDK)",
+        "sdk_version": "citypay-api-client",
+        "status": "Configuration loaded - ready to create PayLinks",
+        "note": "Using official CityPay SDK with PayLink hosted pages"
     }
 
 
@@ -202,43 +203,51 @@ async def process_single_payment(
     db.add(payment_split)
     await db.flush()
 
-    # Create CityPay payment intent
-    citypay = CityPayService()
+    # Create CityPay PayLink using official SDK
+    citypay = CityPayPaylinkService()
     try:
-        payment_intent = await citypay.create_payment_intent(
+        # Create PayLink token
+        paylink_result = citypay.create_paylink_token(
             amount=total_with_tip,
-            order_number=order.order_number,
-            customer_email=payment_data.cardholder_name,  # Using name as identifier
+            order_id=order.order_number,
+            customer_email="guest@lahacienda.com",  # Default email
+            customer_name=payment_data.cardholder_name,
+            order_description=f"La Hacienda Order {order.order_number}",
             split_token=split_token,
         )
 
-        # Store CityPay reference
-        payment_split.payment_provider_id = payment_intent.get("identifier")
+        # Store PayLink token for tracking
+        payment_split.payment_provider_id = paylink_result.get("token")
 
-        # Get payment URL from CityPay response
-        payment_url = payment_intent.get("redirect_url", payment_intent.get("payment_url"))
+        # Get payment URL from PayLink response
+        payment_url = paylink_result.get("url")
 
         if not payment_url:
             raise ValueError("CityPay did not return a payment URL")
 
         await db.commit()
 
+        logger.info(f"✅ PayLink created for order {order.id}: {payment_url}")
+
         return {
-            "message": "Payment intent created successfully",
+            "message": "PayLink created successfully",
             "order_id": order.id,
             "order_number": order.order_number,
             "total_amount": float(total_with_tip),
             "payment_url": payment_url,
+            "paylink_token": paylink_result.get("token"),
             "split_token": split_token,
             "status": "pending_payment",
-            "note": "Redirect customer to payment_url to complete payment with CityPay"
+            "integration_type": "CityPay PayLink (Official SDK)",
+            "note": "Redirect customer to payment_url - they will enter card details on CityPay's secure page"
         }
 
     except Exception as e:
         await db.rollback()
+        logger.error(f"❌ Failed to create PayLink: {str(e)}")
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to create payment intent: {str(e)}"
+            detail=f"Failed to create payment link: {str(e)}"
         )
 
 
@@ -268,7 +277,7 @@ async def split_payment_equally(
 
     # Create payment splits
     payment_links = []
-    citypay = CityPayService()
+    citypay = CityPayPaylinkService()
 
     for i, email in enumerate(split_data.emails):
         split_token = secrets.token_urlsafe(32)
@@ -284,18 +293,20 @@ async def split_payment_equally(
         db.add(payment_split)
         await db.flush()
 
-        # Create CityPay payment intent
-        payment_intent = await citypay.create_payment_intent(
+        # Create CityPay PayLink
+        paylink_result = citypay.create_paylink_token(
             amount=amount_per_person,
-            order_number=order.order_number,
+            order_id=f"{order.order_number}-SPLIT{i+1}",
             customer_email=email,
+            customer_name=f"Guest {i+1}",
+            order_description=f"La Hacienda Order {order.order_number} (Split {i+1}/{split_data.people_count})",
             split_token=split_token,
         )
 
-        payment_split.payment_provider_id = payment_intent.get("identifier")
+        payment_split.payment_provider_id = paylink_result.get("token")
 
         # Send email with payment link
-        payment_url = payment_intent.get("redirect_url", f"{settings.FRONTEND_URL}/payment/{split_token}")
+        payment_url = paylink_result.get("url")
         background_tasks.add_task(
             send_payment_link_email,
             email=email,
@@ -340,9 +351,9 @@ async def split_payment_by_items(
     order.status = "pending_payment"
 
     payment_links = []
-    citypay = CityPayService()
+    citypay = CityPayPaylinkService()
 
-    for split_request in split_data.splits:
+    for idx, split_request in enumerate(split_data.splits, 1):
         split_token = secrets.token_urlsafe(32)
 
         # Add proportional tip and tax
@@ -365,18 +376,20 @@ async def split_payment_by_items(
         db.add(payment_split)
         await db.flush()
 
-        # Create payment intent
-        payment_intent = await citypay.create_payment_intent(
+        # Create PayLink
+        paylink_result = citypay.create_paylink_token(
             amount=total_amount,
-            order_number=order.order_number,
+            order_id=f"{order.order_number}-ITEM{idx}",
             customer_email=split_request.customer_email,
+            customer_name=split_request.customer_name,
+            order_description=f"La Hacienda Order {order.order_number} (Items Split {idx})",
             split_token=split_token,
         )
 
-        payment_split.payment_provider_id = payment_intent.get("identifier")
+        payment_split.payment_provider_id = paylink_result.get("token")
 
         # Send email
-        payment_url = payment_intent.get("redirect_url", f"{settings.FRONTEND_URL}/payment/{split_token}")
+        payment_url = paylink_result.get("url")
         background_tasks.add_task(
             send_payment_link_email,
             email=split_request.customer_email,
@@ -409,8 +422,8 @@ async def verify_payment(split_token: str, transaction_id: str, db: AsyncSession
     if not payment_split:
         raise HTTPException(status_code=404, detail="Payment split not found")
 
-    # Verify with CityPay
-    citypay = CityPayService()
+    # Verify with CityPay PayLink
+    citypay = CityPayPaylinkService()
     payment_status = await citypay.verify_payment(transaction_id)
 
     if payment_status.get("status") == "approved":
