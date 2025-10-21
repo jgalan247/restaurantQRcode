@@ -8,8 +8,8 @@ on CityPay's secure servers (no card data touches our server).
 import os
 import uuid
 import logging
-import citypay_api_client as citypay
-from citypay_api_client.rest import ApiException
+import citypay
+from citypay.rest import ApiException
 from typing import Optional, Dict, Any
 from decimal import Decimal
 
