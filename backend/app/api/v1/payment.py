@@ -472,14 +472,45 @@ from fastapi.responses import RedirectResponse
 from fastapi import Request
 
 @router.api_route("/callback/success", methods=["GET", "POST"])
-async def payment_callback_success(request: Request, token: str = None):
+async def payment_callback_success(request: Request, token: str = None, db: AsyncSession = Depends(get_db)):
     """
     Handle CityPay payment success callback (accepts both GET and POST)
     CityPay may POST data after 3DS authentication
     """
     logger.info(f"Payment success callback received - Method: {request.method}, Token: {token}")
 
-    # Redirect to homepage with success parameter (since /payment-success route gives 404)
+    # If token provided, look up the order and redirect to invoice
+    if token:
+        try:
+            result = await db.execute(
+                select(PaymentSplit).where(PaymentSplit.split_token == token)
+            )
+            payment_split = result.scalar_one_or_none()
+
+            if payment_split:
+                # Mark payment as completed
+                payment_split.payment_status = "completed"
+                payment_split.paid_at = datetime.now()
+
+                # Check if all splits for this order are paid
+                order = payment_split.order
+                all_paid = all(s.payment_status == "completed" for s in order.payment_splits)
+
+                if all_paid:
+                    order.status = "paid"
+                    order.completed_at = datetime.now()
+
+                await db.commit()
+
+                # Redirect to invoice page with order ID (using hash router format)
+                frontend_url = f"{settings.FRONTEND_URL}/#/invoice?order={payment_split.order_id}"
+                logger.info(f"Redirecting to invoice for order {payment_split.order_id}")
+                return RedirectResponse(url=frontend_url, status_code=303)
+        except Exception as e:
+            logger.error(f"Error processing payment callback: {e}")
+            await db.rollback()
+
+    # Fallback: Redirect to homepage with success parameter
     frontend_url = f"{settings.FRONTEND_URL}/?payment=success"
     if token:
         frontend_url += f"&token={token}"
