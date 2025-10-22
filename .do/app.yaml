@@ -88,8 +88,7 @@ services:
       deploy_on_push: true
     build_command: rm -rf node_modules dist && npm install && npm run build
     output_dir: dist
-    static_site: true
-    catchall_document: index.html
+    error_document: index.html
     routes:
       - path: /
     envs:
