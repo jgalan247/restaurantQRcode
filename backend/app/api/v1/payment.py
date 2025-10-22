@@ -479,10 +479,10 @@ async def payment_callback_success(request: Request, token: str = None):
     """
     logger.info(f"Payment success callback received - Method: {request.method}, Token: {token}")
 
-    # Redirect to frontend success page
-    frontend_url = f"{settings.FRONTEND_URL}/payment-success"
+    # Redirect to homepage with success parameter (since /payment-success route gives 404)
+    frontend_url = f"{settings.FRONTEND_URL}/?payment=success"
     if token:
-        frontend_url += f"?token={token}"
+        frontend_url += f"&token={token}"
 
     return RedirectResponse(url=frontend_url, status_code=303)
 
