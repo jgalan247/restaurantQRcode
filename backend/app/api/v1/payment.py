@@ -465,3 +465,49 @@ async def get_payment_split(split_token: str, db: AsyncSession = Depends(get_db)
         raise HTTPException(status_code=404, detail="Payment split not found")
 
     return payment_split
+
+
+# Payment callback endpoints to handle CityPay redirects
+from fastapi.responses import RedirectResponse
+from fastapi import Request
+
+@router.api_route("/callback/success", methods=["GET", "POST"])
+async def payment_callback_success(request: Request, token: str = None):
+    """
+    Handle CityPay payment success callback (accepts both GET and POST)
+    CityPay may POST data after 3DS authentication
+    """
+    logger.info(f"Payment success callback received - Method: {request.method}, Token: {token}")
+
+    # Redirect to frontend success page
+    frontend_url = f"{settings.FRONTEND_URL}/payment-success"
+    if token:
+        frontend_url += f"?token={token}"
+
+    return RedirectResponse(url=frontend_url, status_code=303)
+
+
+@router.api_route("/callback/failure", methods=["GET", "POST"])
+async def payment_callback_failure(request: Request, token: str = None):
+    """
+    Handle CityPay payment failure callback (accepts both GET and POST)
+    """
+    logger.info(f"Payment failure callback received - Method: {request.method}, Token: {token}")
+
+    # Redirect to frontend failure page
+    frontend_url = f"{settings.FRONTEND_URL}/payment-failure"
+    if token:
+        frontend_url += f"?token={token}"
+
+    return RedirectResponse(url=frontend_url, status_code=303)
+
+
+@router.api_route("/callback/cancel", methods=["GET", "POST"])
+async def payment_callback_cancel(request: Request):
+    """
+    Handle CityPay payment cancellation callback (accepts both GET and POST)
+    """
+    logger.info(f"Payment cancel callback received - Method: {request.method}")
+
+    # Redirect to frontend checkout page
+    return RedirectResponse(url=f"{settings.FRONTEND_URL}/checkout", status_code=303)

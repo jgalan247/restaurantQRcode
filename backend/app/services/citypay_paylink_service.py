@@ -101,10 +101,11 @@ class CityPayPaylinkService:
             order_description = f"La Hacienda Order {order_id}"
 
         # Build redirect URLs with split token if provided
+        # Use backend API endpoints to handle CityPay POST redirects, then redirect to frontend
         token_param = f"?token={split_token}" if split_token else ""
-        redirect_success = f"{settings.FRONTEND_URL}/payment-success{token_param}"
-        redirect_failure = f"{settings.FRONTEND_URL}/payment-failure{token_param}"
-        redirect_cancel = f"{settings.FRONTEND_URL}/checkout"
+        redirect_success = f"{settings.FRONTEND_URL}/api/v1/payment/callback/success{token_param}"
+        redirect_failure = f"{settings.FRONTEND_URL}/api/v1/payment/callback/failure{token_param}"
+        redirect_cancel = f"{settings.FRONTEND_URL}/api/v1/payment/callback/cancel{token_param}"
 
         logger.info(f"Creating PayLink for order {order_id}, amount £{amount} ({amount_pence} pence)")
         logger.info(f"Success URL: {redirect_success}")
