@@ -68,6 +68,23 @@ export function MenuPage() {
     const tableNumber = searchParams.get('table');
     const sessionToken = searchParams.get('session');
 
+    // Check for payment success redirect
+    const paymentStatus = searchParams.get('payment');
+    if (paymentStatus === 'success') {
+      toast.success('Payment successful! Thank you for your order.', {
+        duration: 5000,
+        icon: '✅',
+      });
+      // Clear the payment parameter from URL after showing message
+      window.history.replaceState({}, '', '/');
+    } else if (paymentStatus === 'failure') {
+      toast.error('Payment failed. Please try again.', {
+        duration: 5000,
+        icon: '❌',
+      });
+      window.history.replaceState({}, '', '/');
+    }
+
     if (tableNumber && sessionToken) {
       setTableInfo(tableNumber, sessionToken);
     } else {

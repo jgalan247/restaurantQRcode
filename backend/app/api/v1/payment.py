@@ -494,10 +494,10 @@ async def payment_callback_failure(request: Request, token: str = None):
     """
     logger.info(f"Payment failure callback received - Method: {request.method}, Token: {token}")
 
-    # Redirect to frontend failure page
-    frontend_url = f"{settings.FRONTEND_URL}/payment-failure"
+    # Redirect to homepage with failure parameter
+    frontend_url = f"{settings.FRONTEND_URL}/?payment=failure"
     if token:
-        frontend_url += f"?token={token}"
+        frontend_url += f"&token={token}"
 
     return RedirectResponse(url=frontend_url, status_code=303)
 
