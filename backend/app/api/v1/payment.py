@@ -496,8 +496,12 @@ async def payment_callback_success(request: Request, token: str = None, db: Asyn
     if token:
         logger.info(f"🔍 Looking up PaymentSplit with token: {token}")
         try:
+            # Eagerly load the order and payment_splits relationship
+            from sqlalchemy.orm import selectinload
             result = await db.execute(
-                select(PaymentSplit).where(PaymentSplit.split_token == token)
+                select(PaymentSplit)
+                .options(selectinload(PaymentSplit.order).selectinload(Order.payment_splits))
+                .where(PaymentSplit.split_token == token)
             )
             payment_split = result.scalar_one_or_none()
 
