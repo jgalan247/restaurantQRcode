@@ -209,6 +209,10 @@ async def process_single_payment(
     # Create CityPay PayLink using official SDK
     citypay = CityPayPaylinkService()
     try:
+        logger.info(f"🔵 Creating PayLink for order {order.id}")
+        logger.info(f"   Split token: {split_token}")
+        logger.info(f"   Amount: £{total_with_tip}")
+
         # Create PayLink token
         paylink_result = citypay.create_paylink_token(
             amount=total_with_tip,
@@ -218,6 +222,10 @@ async def process_single_payment(
             order_description=f"La Hacienda Order {order.order_number}",
             split_token=split_token,
         )
+
+        logger.info(f"✅ PayLink created successfully")
+        logger.info(f"   PayLink token: {paylink_result.get('token')}")
+        logger.info(f"   Payment URL: {paylink_result.get('url')}")
 
         # Store PayLink token for tracking
         payment_split.payment_provider_id = paylink_result.get("token")
@@ -479,9 +487,10 @@ async def payment_callback_success(request: Request, token: str = None, db: Asyn
     """
     logger.info(f"🔵 Payment success callback received")
     logger.info(f"   Method: {request.method}")
-    logger.info(f"   Token: {token}")
-    logger.info(f"   URL: {request.url}")
-    logger.info(f"   Query params: {dict(request.query_params)}")
+    logger.info(f"   Token from query param: {token}")
+    logger.info(f"   Full URL: {str(request.url)}")
+    logger.info(f"   Query params dict: {dict(request.query_params)}")
+    logger.info(f"   Headers: {dict(request.headers)}")
 
     # If token provided, look up the order and redirect to invoice
     if token:
