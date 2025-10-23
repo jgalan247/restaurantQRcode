@@ -477,10 +477,15 @@ async def payment_callback_success(request: Request, token: str = None, db: Asyn
     Handle CityPay payment success callback (accepts both GET and POST)
     CityPay may POST data after 3DS authentication
     """
-    logger.info(f"Payment success callback received - Method: {request.method}, Token: {token}")
+    logger.info(f"🔵 Payment success callback received")
+    logger.info(f"   Method: {request.method}")
+    logger.info(f"   Token: {token}")
+    logger.info(f"   URL: {request.url}")
+    logger.info(f"   Query params: {dict(request.query_params)}")
 
     # If token provided, look up the order and redirect to invoice
     if token:
+        logger.info(f"🔍 Looking up PaymentSplit with token: {token}")
         try:
             result = await db.execute(
                 select(PaymentSplit).where(PaymentSplit.split_token == token)
@@ -488,6 +493,8 @@ async def payment_callback_success(request: Request, token: str = None, db: Asyn
             payment_split = result.scalar_one_or_none()
 
             if payment_split:
+                logger.info(f"✅ Found PaymentSplit for order {payment_split.order_id}")
+
                 # Mark payment as completed
                 payment_split.payment_status = "completed"
                 payment_split.paid_at = datetime.now()
@@ -496,25 +503,35 @@ async def payment_callback_success(request: Request, token: str = None, db: Asyn
                 order = payment_split.order
                 all_paid = all(s.payment_status == "completed" for s in order.payment_splits)
 
+                logger.info(f"   Total splits: {len(order.payment_splits)}")
+                logger.info(f"   All paid: {all_paid}")
+
                 if all_paid:
                     order.status = "paid"
                     order.completed_at = datetime.now()
+                    logger.info(f"   ✅ Order marked as paid")
 
                 await db.commit()
 
                 # Redirect to invoice page with order ID (using hash router format)
                 frontend_url = f"{settings.FRONTEND_URL}/#/invoice?order={payment_split.order_id}"
-                logger.info(f"Redirecting to invoice for order {payment_split.order_id}")
+                logger.info(f"🔄 Redirecting to invoice: {frontend_url}")
                 return RedirectResponse(url=frontend_url, status_code=303)
+            else:
+                logger.warning(f"⚠️  PaymentSplit not found for token: {token}")
         except Exception as e:
-            logger.error(f"Error processing payment callback: {e}")
+            logger.error(f"❌ Error processing payment callback: {e}")
+            logger.exception(e)
             await db.rollback()
+    else:
+        logger.warning(f"⚠️  No token provided in callback")
 
     # Fallback: Redirect to homepage with success parameter
     frontend_url = f"{settings.FRONTEND_URL}/?payment=success"
     if token:
         frontend_url += f"&token={token}"
 
+    logger.info(f"🔄 Fallback redirect to: {frontend_url}")
     return RedirectResponse(url=frontend_url, status_code=303)
 
 
