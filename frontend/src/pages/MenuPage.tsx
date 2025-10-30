@@ -24,10 +24,12 @@ import { useMenuFilters } from '../hooks/useMenuFilters';
 import { AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import type { Special, Offer } from '../types/admin';
+import { useTranslation } from 'react-i18next';
 
 export function MenuPage() {
   const [searchParams] = useSearchParams();
   const { setTableInfo } = useCart();
+  const { t } = useTranslation();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -68,6 +70,23 @@ export function MenuPage() {
     const tableNumber = searchParams.get('table');
     const sessionToken = searchParams.get('session');
 
+    // Check for payment success redirect
+    const paymentStatus = searchParams.get('payment');
+    if (paymentStatus === 'success') {
+      toast.success(t('notifications.paymentSuccess'), {
+        duration: 5000,
+        icon: '✅',
+      });
+      // Clear the payment parameter from URL after showing message
+      window.history.replaceState({}, '', '/');
+    } else if (paymentStatus === 'failure') {
+      toast.error(t('notifications.paymentFailed'), {
+        duration: 5000,
+        icon: '❌',
+      });
+      window.history.replaceState({}, '', '/');
+    }
+
     if (tableNumber && sessionToken) {
       setTableInfo(tableNumber, sessionToken);
     } else {
@@ -97,8 +116,8 @@ export function MenuPage() {
       setCategories(data);
     } catch (err) {
       console.error('Failed to load menu:', err);
-      setError('Failed to load menu. Please try again.');
-      toast.error('Failed to load menu');
+      setError(t('notifications.menuLoadError'));
+      toast.error(t('notifications.menuLoadError'));
     } finally {
       setLoading(false);
     }
@@ -139,7 +158,7 @@ export function MenuPage() {
         <div className="text-center">
           <p className="text-red-600 mb-4">{error}</p>
           <button onClick={loadMenu} className="btn-primary">
-            Retry
+            {t('paymentFailure.tryAgain')}
           </button>
         </div>
       </div>
@@ -190,9 +209,9 @@ export function MenuPage() {
         <div className="mb-4 md:mb-6">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-2">
             <div className="flex-1">
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Our Menu</h1>
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{t('menu.title')}</h1>
               <p className="text-sm md:text-base text-gray-600 mt-1">
-                Authentic Mexican cuisine made with fresh ingredients
+                {t('menu.subtitle')}
               </p>
             </div>
             <button
@@ -200,24 +219,24 @@ export function MenuPage() {
               className="flex items-center justify-center gap-2 bg-yellow-500 text-yellow-900 px-3 py-2 rounded-lg hover:bg-yellow-600 transition text-xs md:text-sm font-medium self-start sm:self-auto"
             >
               <AlertTriangle size={16} />
-              <span>Allergen Info</span>
+              <span>{t('menu.allergenInfo')}</span>
             </button>
           </div>
           {filteredItems.length !== allItems.length && (
             <p className="text-xs md:text-sm text-orange-600 mt-2">
-              Showing {filteredItems.length} of {allItems.length} items
+              {t('menu.showing', { count: filteredItems.length, total: allItems.length })}
             </p>
           )}
         </div>
 
         {filteredCategories.length === 0 ? (
           <div className="text-center py-12 text-gray-500">
-            <p>No menu items match your filters.</p>
+            <p>{t('menu.noResults')}</p>
             <button
               onClick={() => setFilters(DEFAULT_FILTERS)}
               className="mt-4 text-orange-600 hover:text-orange-700 underline"
             >
-              Clear all filters
+              {t('filters.clearAll')}
             </button>
           </div>
         ) : (

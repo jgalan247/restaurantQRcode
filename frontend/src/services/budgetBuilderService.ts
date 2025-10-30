@@ -1,6 +1,7 @@
 import axios from 'axios';
+import { API_URL } from '../config/api.config';
 
-const API_BASE_URL = 'http://localhost:8000/api/v1';
+const API_BASE_URL = API_URL;
 
 export interface BudgetBuilderRequest {
   budget: number;

@@ -1,0 +1,53 @@
+{
+  "categories": {
+    "Starters": "Starters",
+    "Mains": "Mains",
+    "Desserts": "Desserts",
+    "Drinks": "Drinks",
+    "Kids Menu": "Kids Menu",
+    "Salads": "Salads",
+    "Sides": "Sides"
+  },
+  "items": {
+    "Tacos al Pastor": {
+      "name": "Tacos al Pastor",
+      "description": "Marinated pork with pineapple, onions, and cilantro"
+    },
+    "Guacamole": {
+      "name": "Guacamole",
+      "description": "Fresh avocado dip with lime, tomatoes, and onions"
+    },
+    "Quesadilla": {
+      "name": "Quesadilla",
+      "description": "Grilled tortilla filled with cheese and your choice of filling"
+    },
+    "Burrito": {
+      "name": "Burrito",
+      "description": "Large flour tortilla filled with rice, beans, meat, and toppings"
+    },
+    "Enchiladas": {
+      "name": "Enchiladas",
+      "description": "Rolled tortillas filled with meat and covered in sauce"
+    },
+    "Churros": {
+      "name": "Churros",
+      "description": "Fried dough pastry with cinnamon sugar and chocolate sauce"
+    },
+    "Flan": {
+      "name": "Flan",
+      "description": "Traditional caramel custard dessert"
+    },
+    "Margarita": {
+      "name": "Margarita",
+      "description": "Classic tequila cocktail with lime"
+    },
+    "Horchata": {
+      "name": "Horchata",
+      "description": "Sweet rice milk beverage with cinnamon"
+    },
+    "Nachos": {
+      "name": "Nachos",
+      "description": "Tortilla chips topped with cheese, jalapeños, and toppings"
+    }
+  }
+}

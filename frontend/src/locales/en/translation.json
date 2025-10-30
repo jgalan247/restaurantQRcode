@@ -1,0 +1,182 @@
+{
+  "common": {
+    "back": "Back",
+    "close": "Close",
+    "continue": "Continue",
+    "loading": "Loading...",
+    "processing": "Processing...",
+    "downloading": "Downloading...",
+    "currency": "£"
+  },
+  "header": {
+    "siteName": "La Hacienda"
+  },
+  "menu": {
+    "title": "Our Menu",
+    "subtitle": "Authentic Mexican cuisine made with fresh ingredients",
+    "addToCart": "Add to Cart",
+    "unavailable": "Unavailable",
+    "customize": "Customize your order",
+    "addExtras": "Add extras",
+    "quantity": "Quantity",
+    "allergenInfo": "Allergen Info",
+    "showing": "Showing {{count}} of {{total}} items",
+    "noResults": "No menu items match your filters.",
+    "backToMenu": "Back to Menu"
+  },
+  "filters": {
+    "title": "Filters",
+    "clearAll": "Clear all filters",
+    "dietary": "Dietary Preferences",
+    "spiceLevel": "Spice Level",
+    "specialCategories": "Special Categories",
+    "priceRange": "Price Range",
+    "allergenFilters": "Allergen Filters",
+    "excludeAllergens": "Exclude these allergens (show items WITHOUT)",
+    "showOnlyAllergens": "Show only items with these allergens",
+    "specialsOnly": "Specials Only",
+    "offersOnly": "Offers Only",
+    "search": "Search menu..."
+  },
+  "dietary": {
+    "all": "All",
+    "vegetarian": "🥬 Vegetarian",
+    "vegan": "🌱 Vegan"
+  },
+  "spice": {
+    "mild": "Mild",
+    "medium": "Medium",
+    "hot": "Hot",
+    "extraHot": "Extra-Hot"
+  },
+  "categories": {
+    "kidsMenu": "👶 Kids Menu",
+    "salads": "🥗 Salads",
+    "deals": "💰 Deals",
+    "glutenFree": "🌾 Gluten-Free"
+  },
+  "priceRanges": {
+    "all": "All Prices",
+    "under10": "Under £10",
+    "10to15": "£10-£15",
+    "15to20": "£15-£20",
+    "over20": "Over £20"
+  },
+  "allergens": {
+    "celery": "Celery",
+    "gluten": "Gluten",
+    "crustaceans": "Crustaceans",
+    "eggs": "Eggs",
+    "fish": "Fish",
+    "lupin": "Lupin",
+    "milk": "Milk",
+    "molluscs": "Molluscs",
+    "mustard": "Mustard",
+    "nuts": "Nuts",
+    "peanuts": "Peanuts",
+    "sesame": "Sesame",
+    "soya": "Soya",
+    "sulphites": "Sulphites"
+  },
+  "variants": {
+    "smallGlass": "Small Glass (125ml)",
+    "largeGlass": "Large Glass (250ml)",
+    "bottle": "Bottle (750ml)"
+  },
+  "cart": {
+    "title": "Your Cart",
+    "empty": "Cart is empty",
+    "emptyCart": "Empty Cart",
+    "subtotal": "Subtotal",
+    "gst": "GST (5%)",
+    "total": "Total",
+    "proceedToCheckout": "Proceed to Checkout",
+    "continueShopping": "Continue Shopping",
+    "addedToCart": "Added {{quantity}}x {{name}} to cart"
+  },
+  "checkout": {
+    "title": "Checkout",
+    "numberOfPeople": "Number of People",
+    "emailAddresses": "Email Addresses",
+    "personEmail": "Person {{number}} email",
+    "choosePaymentMethod": "Choose Payment Method",
+    "payFull": "Pay Full Amount",
+    "payFullDesc": "One person pays the entire bill",
+    "splitEqually": "Split Equally",
+    "splitEquallyDesc": "Divide the bill equally among people",
+    "splitByItems": "Split by Items",
+    "splitByItemsDesc": "Each person pays for their own items"
+  },
+  "payment": {
+    "title": "Payment",
+    "cardDetails": "Card Details",
+    "cardNumber": "Card Number",
+    "expiryDate": "Expiry Date",
+    "cvv": "CVV",
+    "cardholderName": "Cardholder Name (optional for testing)",
+    "addTip": "Add a Tip (optional)",
+    "noTip": "No Tip",
+    "customTip": "Custom tip amount",
+    "specialInstructions": "Special Instructions (optional)",
+    "placeOrder": "Place Order",
+    "payAmount": "Pay £{{amount}}",
+    "testMode": "Test Mode",
+    "orderSummary": "Order Summary",
+    "cardNumberPlaceholder": "1234 5678 9012 3456",
+    "expiryPlaceholder": "MM/YY",
+    "cvvPlaceholder": "123",
+    "namePlaceholder": "John Doe",
+    "instructionsPlaceholder": "e.g., No onions, extra sauce..."
+  },
+  "paymentSuccess": {
+    "title": "Order Placed Successfully!",
+    "orderNumber": "Order Number: {{number}}",
+    "paymentDetailsSent": "Payment Details Sent",
+    "instructions": "We've sent payment instructions to the email address(es) you provided. Please check your inbox and complete the payment to confirm your order.",
+    "thankYou": "Your order will be prepared once payment is confirmed. Thank you for dining with us!",
+    "viewInvoice": "View Invoice",
+    "returnToMenu": "Return to Menu"
+  },
+  "paymentFailure": {
+    "title": "Payment Failed",
+    "message": "We encountered an issue processing your payment. Please try again or contact our staff for assistance.",
+    "tryAgain": "Try Again"
+  },
+  "invoice": {
+    "title": "Invoice",
+    "downloadPdf": "Download PDF",
+    "table": "Table {{number}}"
+  },
+  "allergenWarning": {
+    "title": "Allergen Information",
+    "important": "Important: If you have a food allergy or intolerance, please speak to a member of staff before ordering. We cannot guarantee that any dishes are completely allergen-free.",
+    "majorAllergens": "14 Major Allergens (UK Law):",
+    "crossContamination": "Cross-contamination: Our kitchen handles all 14 allergens. While we take every precaution, we cannot guarantee any dish is completely free from allergens.",
+    "understand": "I Understand"
+  },
+  "notifications": {
+    "paymentSuccess": "Payment successful! Thank you for your order.",
+    "orderPlaced": "Order placed successfully! Check your email for payment details.",
+    "menuLoadError": "Failed to load menu. Please try again.",
+    "paymentUrlError": "Payment URL not received from payment processor",
+    "orderError": "Failed to process order. Please try again.",
+    "formErrors": "Please fix the errors in the form",
+    "paymentFailed": "Payment failed. Please try again.",
+    "invoiceLoadError": "Failed to load invoice",
+    "invoiceDownloadError": "Failed to download invoice. Please try again.",
+    "redirectingToPayment": "Redirecting to secure payment page...",
+    "invoiceDownloaded": "Invoice downloaded successfully"
+  },
+  "validation": {
+    "emailRequired": "Email is required",
+    "emailInvalid": "Invalid email format",
+    "itemNameRequired": "Item name is required",
+    "priceRequired": "Valid price is required"
+  },
+  "errors": {
+    "notFound": "Resource not found",
+    "badRequest": "Bad request",
+    "serverError": "Server error. Please try again later.",
+    "networkError": "Network error. Please check your connection."
+  }
+}

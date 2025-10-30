@@ -14,18 +14,17 @@ import { paymentService } from '../services/paymentService';
 import { PaymentMethod } from '../types/payment';
 import { LoadingSpinner } from '../components/layout/LoadingSpinner';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
-type Step = 'customer-info' | 'payment-method' | 'payment-details' | 'tip' | 'processing';
+type Step = 'payment-method' | 'payment-details' | 'tip' | 'processing';
 
 export function CheckoutPage() {
   const navigate = useNavigate();
   const { state, getCartSubtotal, getGSTAmount, clearCart } = useCart();
+  const { t } = useTranslation();
 
-  const [step, setStep] = useState<Step>('customer-info');
-  const [customerName, setCustomerName] = useState('');
-  const [customerEmail, setCustomerEmail] = useState('');
-  const [specialRequests, setSpecialRequests] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null);
+  const [step, setStep] = useState<Step>('tip');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(PaymentMethod.SINGLE);
   const [tipPercentage, setTipPercentage] = useState(0);
   const [tipAmount, setTipAmount] = useState(0);
   const [splitEmails, setSplitEmails] = useState<string[]>([]);
@@ -37,15 +36,6 @@ export function CheckoutPage() {
   const subtotal = getCartSubtotal();
   const gst = getGSTAmount();
   const total = subtotal + gst + tipAmount;
-
-  const handleCustomerInfoSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!customerEmail) {
-      toast.error('Email is required');
-      return;
-    }
-    setStep('payment-method');
-  };
 
   const handlePaymentMethodSelect = (method: PaymentMethod) => {
     setPaymentMethod(method);
@@ -81,19 +71,41 @@ export function CheckoutPage() {
           modifiers: item.modifiers.map((m) => m.id),
           special_instructions: item.specialInstructions,
         })),
-        customer_name: customerName || undefined,
-        customer_email: customerEmail,
-        special_requests: specialRequests || undefined,
+        customer_name: undefined,
+        customer_email: 'guest@lahacienda.com',
+        special_requests: undefined,
       };
 
       const order = await orderService.createOrder(orderData);
 
+      console.log('Order created:', order);
+      console.log('Payment method selected:', paymentMethod);
+
       // Create payment based on method
       if (paymentMethod === PaymentMethod.SINGLE) {
-        await paymentService.createSinglePayment(order.id, {
-          email: customerEmail,
+        console.log('Creating single payment for order:', order.id);
+        // For single payment, create payment intent and redirect to CityPay
+        const paymentResponse = await paymentService.createSinglePayment(order.id, {
+          card_number: '4111111111111111', // Placeholder - will be entered on CityPay page
+          expiry_date: '12/25',
+          cvv: '123',
+          cardholder_name: 'Guest',
           tip_percentage: tipPercentage,
         });
+
+        // Clear cart
+        clearCart();
+
+        // Redirect to CityPay payment page
+        if (paymentResponse.payment_url) {
+          toast.success(t('notifications.redirectingToPayment'));
+          window.location.href = paymentResponse.payment_url;
+          return;
+        } else {
+          toast.error(t('notifications.paymentUrlError'));
+          setStep('tip');
+          return;
+        }
       } else if (paymentMethod === PaymentMethod.SPLIT_EQUAL) {
         await paymentService.splitPaymentEqually(order.id, {
           people_count: splitEmails.length,
@@ -115,11 +127,11 @@ export function CheckoutPage() {
 
       // Clear cart and show success
       clearCart();
-      toast.success('Order placed successfully! Check your email for payment details.');
+      toast.success(t('notifications.orderPlaced'));
       navigate(`/payment-success?order=${order.order_number}&id=${order.id}`);
     } catch (err: any) {
       console.error('Checkout failed:', err);
-      toast.error(err.message || 'Failed to process order. Please try again.');
+      toast.error(err.message || t('notifications.orderError'));
       setStep('tip');
     } finally {
       setLoading(false);
@@ -130,8 +142,8 @@ export function CheckoutPage() {
     return (
       <div className="page-container flex items-center justify-center">
         <div className="content-container text-center">
-          <p className="text-gray-600 mb-4">Your cart is empty</p>
-          <Button onClick={() => navigate('/')}>Back to Menu</Button>
+          <p className="text-gray-600 mb-4">{t('cart.empty')}</p>
+          <Button onClick={() => navigate('/')}>{t('menu.backToMenu')}</Button>
         </div>
       </div>
     );
@@ -146,70 +158,16 @@ export function CheckoutPage() {
       <header className="on-gradient-bg shadow-sm">
         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center gap-4">
           <button
-            onClick={() => {
-              if (step === 'customer-info') {
-                navigate('/');
-              } else if (step === 'payment-method') {
-                setStep('customer-info');
-              } else if (step === 'payment-details') {
-                setStep('payment-method');
-              } else if (step === 'tip') {
-                if (paymentMethod === PaymentMethod.SINGLE) {
-                  setStep('payment-method');
-                } else {
-                  setStep('payment-details');
-                }
-              }
-            }}
+            onClick={() => navigate('/')}
             className="p-2 hover:bg-gray-100 rounded-lg"
           >
             <ArrowLeft size={24} />
           </button>
-          <h1 className="text-xl font-bold">Checkout</h1>
+          <h1 className="text-xl font-bold">{t('checkout.title')}</h1>
         </div>
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-6">
-        {/* Customer Info Step */}
-        {step === 'customer-info' && (
-          <div className="card space-y-4">
-            <h2 className="text-xl font-bold">Your Information</h2>
-            <form onSubmit={handleCustomerInfoSubmit} className="space-y-4">
-              <Input
-                label="Name (optional)"
-                type="text"
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                placeholder="John Doe"
-              />
-              <Input
-                label="Email *"
-                type="email"
-                value={customerEmail}
-                onChange={(e) => setCustomerEmail(e.target.value)}
-                placeholder="john@example.com"
-                required
-              />
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Special Requests (optional)
-                </label>
-                <textarea
-                  value={specialRequests}
-                  onChange={(e) => setSpecialRequests(e.target.value)}
-                  placeholder="Any special requests or dietary requirements..."
-                  className="input-field resize-none"
-                  rows={3}
-                />
-              </div>
-              <CartSummary subtotal={subtotal} gst={gst} total={subtotal + gst} />
-              <Button type="submit" fullWidth>
-                Continue
-              </Button>
-            </form>
-          </div>
-        )}
-
         {/* Payment Method Step */}
         {step === 'payment-method' && (
           <div className="card">
@@ -248,19 +206,13 @@ export function CheckoutPage() {
             <div className="flex gap-3">
               <Button
                 variant="secondary"
-                onClick={() => {
-                  if (paymentMethod === PaymentMethod.SINGLE) {
-                    setStep('payment-method');
-                  } else {
-                    setStep('payment-details');
-                  }
-                }}
+                onClick={() => navigate('/')}
                 fullWidth
               >
-                Back
+                {t('menu.backToMenu')}
               </Button>
               <Button onClick={handleFinalSubmit} fullWidth>
-                Place Order
+                {t('payment.placeOrder')}
               </Button>
             </div>
           </div>

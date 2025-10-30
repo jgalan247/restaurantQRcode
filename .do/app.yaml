@@ -10,15 +10,17 @@ databases:
 
 services:
   - name: backend
-    source_dir: /backend
+    source_dir: backend
     github:
       branch: feature/complete-admin-system
       deploy_on_push: true
     build_command: pip install -r requirements.txt
-    run_command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    run_command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --root-path /api
     http_port: 8000
     instance_size_slug: basic-xxs
     instance_count: 1
+    routes:
+      - path: /api
     envs:
       - key: DATABASE_URL
         scope: RUN_TIME
@@ -28,22 +30,71 @@ services:
       - key: ENVIRONMENT
         value: production
       - key: CORS_ORIGINS
-        value: '["https://${_self.HOSTNAME}"]'
+        value: '["https://seahorse-app-zxz5f.ondigitalocean.app","https://${frontend.PUBLIC_URL}","https://${_self.PUBLIC_URL}"]'
+      - key: FRONTEND_URL
+        value: https://seahorse-app-zxz5f.ondigitalocean.app
+      - key: SECRET_KEY
+        scope: RUN_TIME
+        type: SECRET
+        # IMPORTANT: Set this in Digital Ocean dashboard
+        # Generate with: python3 -c "import secrets; print(secrets.token_urlsafe(64))"
+      - key: ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "480"
       - key: GST_RATE
         value: "0.05"
       - key: CURRENCY
         value: GBP
+      - key: RESTAURANT_NAME
+        value: La Hacienda
+      - key: RESTAURANT_ADDRESS
+        value: "123 Mexican Street, London, UK, SW1A 1AA"
+      - key: RESTAURANT_PHONE
+        value: "+44 20 1234 5678"
+      - key: RESTAURANT_EMAIL
+        value: info@lahacienda.co.uk
+      - key: RESTAURANT_VAT_NUMBER
+        value: GB123456789
+      # Payment Gateway - CityPay
+      - key: CITYPAY_MERCHANT_ID
+        scope: RUN_AND_BUILD_TIME
+        type: SECRET
+      - key: CITYPAY_API_KEY
+        scope: RUN_AND_BUILD_TIME
+        type: SECRET
+      - key: CITYPAY_BASE_URL
+        value: https://secure.citypay.com
+      # Email Service
+      - key: MAIL_USERNAME
+        scope: RUN_TIME
+        type: SECRET
+      - key: MAIL_PASSWORD
+        scope: RUN_TIME
+        type: SECRET
+      - key: MAIL_SERVER
+        value: smtp.sendgrid.net
+      - key: MAIL_FROM
+        value: noreply@lahacienda.co.uk
+      - key: MAIL_PORT
+        value: "587"
+      - key: MAIL_FROM_NAME
+        value: La Hacienda Restaurant
 
   - name: frontend
-    source_dir: /frontend
+    source_dir: frontend
     github:
       branch: feature/complete-admin-system
       deploy_on_push: true
-    build_command: npm install && npm run build
+    build_command: rm -rf node_modules dist && npm install && npm run build
     output_dir: dist
-    static_site: true
+    error_document: index.html
+    routes:
+      - path: /
     envs:
       - key: VITE_API_URL
-        value: ${backend.PUBLIC_URL}/api/v1
+        scope: BUILD_TIME
+        value: https://seahorse-app-zxz5f.ondigitalocean.app/api/v1
       - key: VITE_APP_NAME
+        scope: BUILD_TIME
         value: La Hacienda

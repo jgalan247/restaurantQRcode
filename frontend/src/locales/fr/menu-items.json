@@ -1,0 +1,53 @@
+{
+  "categories": {
+    "Starters": "Entrées",
+    "Mains": "Plats Principaux",
+    "Desserts": "Desserts",
+    "Drinks": "Boissons",
+    "Kids Menu": "Menu Enfants",
+    "Salads": "Salades",
+    "Sides": "Accompagnements"
+  },
+  "items": {
+    "Tacos al Pastor": {
+      "name": "Tacos al Pastor",
+      "description": "Porc mariné avec ananas, oignons et coriandre"
+    },
+    "Guacamole": {
+      "name": "Guacamole",
+      "description": "Trempette d'avocat frais avec lime, tomates et oignons"
+    },
+    "Quesadilla": {
+      "name": "Quesadilla",
+      "description": "Tortilla grillée garnie de fromage et de votre choix de garniture"
+    },
+    "Burrito": {
+      "name": "Burrito",
+      "description": "Grande tortilla de blé garnie de riz, haricots, viande et garnitures"
+    },
+    "Enchiladas": {
+      "name": "Enchiladas",
+      "description": "Tortillas roulées garnies de viande et recouvertes de sauce"
+    },
+    "Churros": {
+      "name": "Churros",
+      "description": "Pâte frite avec sucre à la cannelle et sauce au chocolat"
+    },
+    "Flan": {
+      "name": "Flan",
+      "description": "Dessert traditionnel à la crème caramel"
+    },
+    "Margarita": {
+      "name": "Margarita",
+      "description": "Cocktail classique à la tequila avec lime"
+    },
+    "Horchata": {
+      "name": "Horchata",
+      "description": "Boisson sucrée au lait de riz avec cannelle"
+    },
+    "Nachos": {
+      "name": "Nachos",
+      "description": "Chips de tortilla garnies de fromage, jalapeños et garnitures"
+    }
+  }
+}

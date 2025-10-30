@@ -1,12 +1,14 @@
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { CheckCircle, Mail, FileText } from 'lucide-react';
 import { Button } from '../components/common/Button';
+import { useTranslation } from 'react-i18next';
 
 export function PaymentSuccessPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const orderNumber = searchParams.get('order');
   const orderId = searchParams.get('id'); // Order ID for invoice link
+  const { t } = useTranslation();
 
   return (
     <div className="page-container flex items-center justify-center px-4">
@@ -17,11 +19,11 @@ export function PaymentSuccessPage() {
           </div>
         </div>
 
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Order Placed Successfully!</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">{t('paymentSuccess.title')}</h1>
 
         {orderNumber && (
           <p className="text-gray-600 mb-6">
-            Order Number: <span className="font-semibold text-primary">{orderNumber}</span>
+            {t('paymentSuccess.orderNumber', { number: orderNumber })}
           </p>
         )}
 
@@ -29,10 +31,9 @@ export function PaymentSuccessPage() {
           <div className="flex items-start gap-3">
             <Mail className="text-blue-600 mt-1" size={24} />
             <div className="text-left">
-              <p className="font-medium text-blue-900 mb-1">Payment Details Sent</p>
+              <p className="font-medium text-blue-900 mb-1">{t('paymentSuccess.paymentDetailsSent')}</p>
               <p className="text-sm text-blue-700">
-                We've sent payment instructions to the email address(es) you provided. Please check
-                your inbox and complete the payment to confirm your order.
+                {t('paymentSuccess.instructions')}
               </p>
             </div>
           </div>
@@ -40,7 +41,7 @@ export function PaymentSuccessPage() {
 
         <div className="space-y-3">
           <p className="text-sm text-gray-600">
-            Your order will be prepared once payment is confirmed. Thank you for dining with us!
+            {t('paymentSuccess.thankYou')}
           </p>
 
           {orderId && (
@@ -50,12 +51,12 @@ export function PaymentSuccessPage() {
               className="flex items-center justify-center gap-2"
             >
               <FileText size={18} />
-              View Invoice
+              {t('paymentSuccess.viewInvoice')}
             </Button>
           )}
 
           <Button fullWidth onClick={() => navigate('/')} variant="secondary">
-            Return to Menu
+            {t('paymentSuccess.returnToMenu')}
           </Button>
         </div>
       </div>

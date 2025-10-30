@@ -32,13 +32,29 @@ export interface SplitByItemsRequest {
 }
 
 export interface SinglePaymentRequest {
-  email: string;
+  card_number: string;
+  expiry_date: string;
+  cvv: string;
+  cardholder_name: string;
   tip_percentage?: number;
 }
 
 export interface PaymentResponse {
   order_id: number;
-  payment_method: PaymentMethod;
-  splits: PaymentSplit[];
+  order_number: string;
   message: string;
+  total_amount?: number;
+  payment_url?: string;  // CityPay payment URL for single payments
+  split_token?: string;  // Payment tracking token
+  status?: string;
+  note?: string;
+  // For split payments
+  payment_method?: PaymentMethod;
+  splits?: PaymentSplit[];
+  payment_links?: Array<{
+    email: string;
+    amount: number;
+    payment_url: string;
+    split_token?: string;
+  }>;
 }

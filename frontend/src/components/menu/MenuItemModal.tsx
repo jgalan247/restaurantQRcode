@@ -6,6 +6,8 @@ import { DietaryBadge } from './DietaryBadge';
 import { useCart } from '../../context/CartContext';
 import toast from 'react-hot-toast';
 import { parsePrice, formatCurrency } from '../../utils/formatters';
+import { useTranslation } from 'react-i18next';
+import { translateItemName, translateItemDescription } from '../../utils/menuTranslation';
 
 interface MenuItemModalProps {
   item: MenuItem | null;
@@ -15,6 +17,7 @@ interface MenuItemModalProps {
 
 export function MenuItemModal({ item, isOpen, onClose }: MenuItemModalProps) {
   const { addItem } = useCart();
+  const { t } = useTranslation();
   const [selectedModifiers, setSelectedModifiers] = useState<CartItemModifier[]>([]);
   const [specialInstructions, setSpecialInstructions] = useState('');
   const [quantity, setQuantity] = useState(1);
@@ -75,7 +78,7 @@ export function MenuItemModal({ item, isOpen, onClose }: MenuItemModalProps) {
         addItem(item, selectedModifiers, specialInstructions || undefined);
       }
     }
-    toast.success(`Added ${quantity}x ${item.name} to cart`);
+    toast.success(t('cart.addedToCart', { quantity, name: item.name }));
     handleClose();
   };
 
@@ -103,7 +106,7 @@ export function MenuItemModal({ item, isOpen, onClose }: MenuItemModalProps) {
         )}
 
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">{item.name}</h2>
+          <h2 className="text-2xl font-bold text-gray-900">{translateItemName(item.name)}</h2>
           <p className="text-xl text-primary font-bold mt-1">{formatCurrency(item.price)}</p>
         </div>
 
@@ -114,12 +117,12 @@ export function MenuItemModal({ item, isOpen, onClose }: MenuItemModalProps) {
           isSpicy={isSpicy}
         />
 
-        {item.description && <p className="text-gray-700">{item.description}</p>}
+        {item.description && <p className="text-gray-700">{translateItemDescription(item.name, item.description)}</p>}
 
         {/* Wine/Drink Variant Selection */}
         {item.has_variants && (
           <div className="border-t border-b border-gray-200 py-4">
-            <h3 className="font-semibold text-gray-900 mb-3">Customize your order</h3>
+            <h3 className="font-semibold text-gray-900 mb-3">{t('menu.customize')}</h3>
             <div className="space-y-2">
               {item.price_small_glass && (
                 <label
@@ -138,7 +141,7 @@ export function MenuItemModal({ item, isOpen, onClose }: MenuItemModalProps) {
                       onChange={() => handleVariantChange('small_glass', item.price_small_glass, 'Small Glass (125ml)')}
                       className="mr-3 h-5 w-5 text-primary focus:ring-primary"
                     />
-                    <span className="text-gray-900 font-medium">Small Glass (125ml)</span>
+                    <span className="text-gray-900 font-medium">{t('variants.smallGlass')}</span>
                   </div>
                   <span className="text-primary font-bold text-lg">
                     {formatCurrency(item.price_small_glass)}
@@ -160,10 +163,10 @@ export function MenuItemModal({ item, isOpen, onClose }: MenuItemModalProps) {
                       name="variant"
                       value="large_glass"
                       checked={selectedVariant === 'large_glass'}
-                      onChange={() => handleVariantChange('large_glass', item.price_large_glass, 'Large Glass (250ml)')}
+                      onChange={() => handleVariantChange('large_glass', item.price_large_glass, t('variants.largeGlass'))}
                       className="mr-3 h-5 w-5 text-primary focus:ring-primary"
                     />
-                    <span className="text-gray-900 font-medium">Large Glass (250ml)</span>
+                    <span className="text-gray-900 font-medium">{t('variants.largeGlass')}</span>
                   </div>
                   <span className="text-primary font-bold text-lg">
                     {formatCurrency(item.price_large_glass)}
@@ -185,10 +188,10 @@ export function MenuItemModal({ item, isOpen, onClose }: MenuItemModalProps) {
                       name="variant"
                       value="bottle"
                       checked={selectedVariant === 'bottle'}
-                      onChange={() => handleVariantChange('bottle', item.price_bottle, 'Bottle (750ml)')}
+                      onChange={() => handleVariantChange('bottle', item.price_bottle, t('variants.bottle'))}
                       className="mr-3 h-5 w-5 text-primary focus:ring-primary"
                     />
-                    <span className="text-gray-900 font-medium">Bottle (750ml)</span>
+                    <span className="text-gray-900 font-medium">{t('variants.bottle')}</span>
                   </div>
                   <span className="text-primary font-bold text-lg">
                     {formatCurrency(item.price_bottle)}
@@ -201,7 +204,7 @@ export function MenuItemModal({ item, isOpen, onClose }: MenuItemModalProps) {
 
         {item.modifiers && item.modifiers.length > 0 && (
           <div>
-            <h3 className="font-semibold text-gray-900 mb-2">Add extras</h3>
+            <h3 className="font-semibold text-gray-900 mb-2">{t('menu.addExtras')}</h3>
             <div className="space-y-2">
               {item.modifiers.map((modifier) => (
                 <label
@@ -228,19 +231,19 @@ export function MenuItemModal({ item, isOpen, onClose }: MenuItemModalProps) {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Special Instructions (optional)
+            {t('payment.specialInstructions')}
           </label>
           <textarea
             value={specialInstructions}
             onChange={(e) => setSpecialInstructions(e.target.value)}
-            placeholder="e.g., No onions, extra sauce..."
+            placeholder={t('payment.instructionsPlaceholder')}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none"
             rows={3}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">{t('menu.quantity')}</label>
           <div className="flex items-center gap-3">
             <Button
               variant="secondary"
@@ -273,14 +276,14 @@ export function MenuItemModal({ item, isOpen, onClose }: MenuItemModalProps) {
             variant="secondary"
             onClick={handleClose}
           >
-            Close
+            {t('common.close')}
           </Button>
           <Button
             fullWidth
             onClick={handleAddToCart}
             disabled={!item.is_available}
           >
-            {item.is_available ? 'Add to Cart' : 'Unavailable'}
+            {item.is_available ? t('menu.addToCart') : t('menu.unavailable')}
           </Button>
         </div>
       </div>

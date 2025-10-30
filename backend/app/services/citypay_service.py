@@ -24,7 +24,8 @@ class CityPayService:
         self.settings = get_settings()
         self.base_url = self.settings.CITYPAY_BASE_URL
         self.merchant_id = self.settings.CITYPAY_MERCHANT_ID
-        self.api_key = self.settings.CITYPAY_API_KEY
+        # Note: This mock service doesn't need API credentials
+        # Only used for client-side card validation
 
     # TODO: Uncomment and implement in production
     # async def process_payment(
@@ -288,10 +289,11 @@ When ready to implement production payment processing:
 
 1. SETUP:
    - Register for CityPay merchant account
-   - Obtain API credentials (Merchant ID and API Key)
+   - Obtain API credentials (Merchant ID, Client ID, and Licence Key)
    - Add credentials to .env file:
      CITYPAY_MERCHANT_ID=your_merchant_id
-     CITYPAY_API_KEY=your_api_key
+     CITYPAY_CLIENT_ID=your_client_id
+     CITYPAY_LICENCE_KEY=your_licence_key
 
 2. SECURITY:
    - Never store full card numbers in database

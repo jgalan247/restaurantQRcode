@@ -33,27 +33,27 @@ class MenuItemBase(BaseModel):
     name: str = Field(max_length=200)
     description: Optional[str] = None
     price: Decimal = Field(ge=0)
-    dietary_tags: List[str] = Field(default_factory=list)
+    dietary_tags: Optional[List[str]] = Field(default=None)
     is_available: bool = True
 
     # Variant pricing fields (for wines, drinks with multiple sizes)
-    has_variants: bool = False
+    has_variants: Optional[bool] = False
     price_small_glass: Optional[Decimal] = Field(None, ge=0)
     price_large_glass: Optional[Decimal] = Field(None, ge=0)
     price_bottle: Optional[Decimal] = Field(None, ge=0)
 
     # Filter-related fields
     spice_level: Optional[str] = None
-    is_lite_bite: bool = False
-    is_child_friendly: bool = False
-    is_salad: bool = False
-    is_deal: bool = False
-    is_gluten_free: bool = False
+    is_lite_bite: Optional[bool] = False
+    is_child_friendly: Optional[bool] = False
+    is_salad: Optional[bool] = False
+    is_deal: Optional[bool] = False
+    is_gluten_free: Optional[bool] = False
     calories: Optional[int] = None
 
     # UK Law Compliance: 14 major allergens must be clearly displayed
-    allergens: List[str] = Field(
-        default_factory=list,
+    allergens: Optional[List[str]] = Field(
+        default=None,
         description="List of allergens present in this item (UK Food Information Regulations 2014)"
     )
 
@@ -152,9 +152,9 @@ class ComboItemDetail(BaseModel):
     price: Decimal
     category: str
     image_url: Optional[str]
-    dietary_tags: List[str]
+    dietary_tags: Optional[List[str]] = None
     calories: Optional[int]
-    allergens: List[str]
+    allergens: Optional[List[str]] = None
 
 
 class UpgradeSuggestion(BaseModel):
@@ -205,7 +205,7 @@ class AdminMenuItemResponse(BaseModel):
     category_name: str
     description: Optional[str]
     price: Decimal
-    has_variants: bool
+    has_variants: Optional[bool] = False
     price_small_glass: Optional[Decimal]
     price_large_glass: Optional[Decimal]
     price_bottle: Optional[Decimal]
@@ -214,11 +214,11 @@ class AdminMenuItemResponse(BaseModel):
     image_url: Optional[str]
     is_available: bool
     spice_level: Optional[str]
-    is_lite_bite: bool
-    is_child_friendly: bool
-    is_salad: bool
-    is_deal: bool
-    is_gluten_free: bool
+    is_lite_bite: Optional[bool] = False
+    is_child_friendly: Optional[bool] = False
+    is_salad: Optional[bool] = False
+    is_deal: Optional[bool] = False
+    is_gluten_free: Optional[bool] = False
     dietary_tags: Optional[List[str]]
     display_order: Optional[int]
 
