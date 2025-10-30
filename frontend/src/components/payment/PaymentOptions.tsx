@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { User, Users, Receipt } from 'lucide-react';
 import { PaymentMethod } from '../../types/payment';
+import { useTranslation } from 'react-i18next';
 
 interface PaymentOptionsProps {
   onMethodSelect: (method: PaymentMethod) => void;
@@ -8,6 +9,7 @@ interface PaymentOptionsProps {
 
 export function PaymentOptions({ onMethodSelect }: PaymentOptionsProps) {
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
+  const { t } = useTranslation();
 
   const handleSelect = (method: PaymentMethod) => {
     setSelectedMethod(method);
@@ -18,26 +20,26 @@ export function PaymentOptions({ onMethodSelect }: PaymentOptionsProps) {
     {
       method: PaymentMethod.SINGLE,
       icon: User,
-      title: 'Pay Full Amount',
-      description: 'One person pays the entire bill',
+      title: t('checkout.payFull'),
+      description: t('checkout.payFullDesc'),
     },
     {
       method: PaymentMethod.SPLIT_EQUAL,
       icon: Users,
-      title: 'Split Equally',
-      description: 'Divide the bill equally among people',
+      title: t('checkout.splitEqually'),
+      description: t('checkout.splitEquallyDesc'),
     },
     {
       method: PaymentMethod.SPLIT_BY_ITEMS,
       icon: Receipt,
-      title: 'Split by Items',
-      description: 'Each person pays for their own items',
+      title: t('checkout.splitByItems'),
+      description: t('checkout.splitByItemsDesc'),
     },
   ];
 
   return (
     <div className="space-y-3">
-      <h3 className="font-semibold text-gray-900 text-lg">Choose Payment Method</h3>
+      <h3 className="font-semibold text-gray-900 text-lg">{t('checkout.choosePaymentMethod')}</h3>
 
       <div className="grid gap-3">
         {options.map(({ method, icon: Icon, title, description }) => (
