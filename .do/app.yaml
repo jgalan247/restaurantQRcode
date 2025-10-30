@@ -12,7 +12,7 @@ services:
   - name: backend
     source_dir: backend
     github:
-      branch: feature/complete-admin-system
+      branch: main
       deploy_on_push: true
     build_command: pip install -r requirements.txt
     run_command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --root-path /api
@@ -84,7 +84,7 @@ services:
   - name: frontend
     source_dir: frontend
     github:
-      branch: feature/complete-admin-system
+      branch: main
       deploy_on_push: true
     build_command: rm -rf node_modules dist && npm install && npm run build
     output_dir: dist
