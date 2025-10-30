@@ -1,0 +1,10 @@
+spec:
+  name: lahacienda-ordering
+  region: lon
+  services:
+  - name: backend
+    source_dir: backend
+  - name: frontend
+    source_dir: frontend
+  databases:
+  - name: lahacienda-db
