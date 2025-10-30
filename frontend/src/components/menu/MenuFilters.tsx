@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { MenuFilters as MenuFiltersType, DEFAULT_FILTERS } from '../../types/filters';
 import { X, Search, Filter, AlertTriangle, Star, Gift } from 'lucide-react';
 import { ALLERGEN_INFO } from '../../types/allergens';
+import { useTranslation } from 'react-i18next';
 
 interface MenuFiltersProps {
   filters: MenuFiltersType;
@@ -17,6 +18,7 @@ const MenuFilters: React.FC<MenuFiltersProps> = ({
   hasActiveOffers = false
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const { t } = useTranslation();
 
   const updateFilter = <K extends keyof MenuFiltersType>(
     key: K,
@@ -101,7 +103,7 @@ const MenuFilters: React.FC<MenuFiltersProps> = ({
               className="flex items-center justify-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
             >
               <Filter size={20} />
-              <span className="font-semibold">Filters</span>
+              <span className="font-semibold">{t('filters.title')}</span>
               {activeFilterCount > 0 && (
                 <span className="bg-white text-orange-500 rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">
                   {activeFilterCount}
@@ -114,7 +116,7 @@ const MenuFilters: React.FC<MenuFiltersProps> = ({
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
               <input
                 type="text"
-                placeholder="Search menu..."
+                placeholder={t('filters.search')}
                 value={filters.searchQuery}
                 onChange={(e) => updateFilter('searchQuery', e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none"
@@ -134,7 +136,7 @@ const MenuFilters: React.FC<MenuFiltersProps> = ({
                     }`}
                   >
                     <Star size={18} className={filters.showSpecialsOnly ? 'fill-white' : 'fill-yellow-500'} />
-                    <span>Specials</span>
+                    <span>{t('filters.specialsOnly')}</span>
                   </button>
                 )}
                 {hasActiveOffers && (
@@ -147,7 +149,7 @@ const MenuFilters: React.FC<MenuFiltersProps> = ({
                     }`}
                   >
                     <Gift size={18} />
-                    <span>Offers</span>
+                    <span>{t('filters.offersOnly')}</span>
                   </button>
                 )}
               </div>
@@ -159,7 +161,7 @@ const MenuFilters: React.FC<MenuFiltersProps> = ({
               onClick={clearAllFilters}
               className="text-sm text-red-600 hover:text-red-800 font-medium underline self-center sm:self-auto"
             >
-              Clear All
+              {t('filters.clearAll')}
             </button>
           )}
         </div>
@@ -169,7 +171,7 @@ const MenuFilters: React.FC<MenuFiltersProps> = ({
           <div className="mt-4 p-4 bg-orange-50 rounded-lg space-y-4">
             {/* Dietary Filters */}
             <div>
-              <h3 className="font-semibold text-gray-700 mb-2">Dietary Preferences</h3>
+              <h3 className="font-semibold text-gray-700 mb-2">{t('filters.dietary')}</h3>
               <div className="flex gap-2 flex-wrap">
                 <button
                   onClick={() => toggleDietary('all')}
@@ -179,7 +181,7 @@ const MenuFilters: React.FC<MenuFiltersProps> = ({
                       : 'bg-white text-gray-700 hover:bg-green-100'
                   }`}
                 >
-                  All
+                  {t('dietary.all')}
                 </button>
                 <button
                   onClick={() => toggleDietary('vegetarian')}
@@ -189,7 +191,7 @@ const MenuFilters: React.FC<MenuFiltersProps> = ({
                       : 'bg-white text-gray-700 hover:bg-green-100'
                   }`}
                 >
-                  🥬 Vegetarian
+                  {t('dietary.vegetarian')}
                 </button>
                 <button
                   onClick={() => toggleDietary('vegan')}
@@ -199,14 +201,14 @@ const MenuFilters: React.FC<MenuFiltersProps> = ({
                       : 'bg-white text-gray-700 hover:bg-green-100'
                   }`}
                 >
-                  🌱 Vegan
+                  {t('dietary.vegan')}
                 </button>
               </div>
             </div>
 
             {/* Spice Level */}
             <div>
-              <h3 className="font-semibold text-gray-700 mb-2">Spice Level</h3>
+              <h3 className="font-semibold text-gray-700 mb-2">{t('filters.spiceLevel')}</h3>
               <div className="flex gap-2 flex-wrap">
                 {(['all', 'mild', 'medium', 'hot', 'extra-hot'] as const).map((level) => (
                   <button
@@ -226,7 +228,7 @@ const MenuFilters: React.FC<MenuFiltersProps> = ({
 
             {/* Special Categories */}
             <div>
-              <h3 className="font-semibold text-gray-700 mb-2">Special Categories</h3>
+              <h3 className="font-semibold text-gray-700 mb-2">{t('filters.specialCategories')}</h3>
               <div className="flex gap-2 flex-wrap">
                 <button
                   onClick={() => toggleCategory('all')}
@@ -236,7 +238,7 @@ const MenuFilters: React.FC<MenuFiltersProps> = ({
                       : 'bg-white text-gray-700 hover:bg-purple-100'
                   }`}
                 >
-                  All
+                  {t('dietary.all')}
                 </button>
                 <button
                   onClick={() => toggleCategory('children')}
@@ -246,7 +248,7 @@ const MenuFilters: React.FC<MenuFiltersProps> = ({
                       : 'bg-white text-gray-700 hover:bg-purple-100'
                   }`}
                 >
-                  👶 Kids Menu
+                  {t('categories.kidsMenu')}
                 </button>
                 <button
                   onClick={() => toggleCategory('salads')}
@@ -256,7 +258,7 @@ const MenuFilters: React.FC<MenuFiltersProps> = ({
                       : 'bg-white text-gray-700 hover:bg-purple-100'
                   }`}
                 >
-                  🥗 Salads
+                  {t('categories.salads')}
                 </button>
                 <button
                   onClick={() => toggleCategory('deals')}
@@ -266,7 +268,7 @@ const MenuFilters: React.FC<MenuFiltersProps> = ({
                       : 'bg-white text-gray-700 hover:bg-purple-100'
                   }`}
                 >
-                  💰 Deals
+                  {t('categories.deals')}
                 </button>
                 <button
                   onClick={() => toggleCategory('gluten-free')}
@@ -276,14 +278,14 @@ const MenuFilters: React.FC<MenuFiltersProps> = ({
                       : 'bg-white text-gray-700 hover:bg-purple-100'
                   }`}
                 >
-                  🌾 Gluten-Free
+                  {t('categories.glutenFree')}
                 </button>
               </div>
             </div>
 
             {/* Price Range */}
             <div>
-              <h3 className="font-semibold text-gray-700 mb-2">Price Range</h3>
+              <h3 className="font-semibold text-gray-700 mb-2">{t('filters.priceRange')}</h3>
               <div className="flex gap-2 flex-wrap">
                 {(['all', 'under-10', '10-15', '15-20', 'over-20'] as const).map((range) => (
                   <button
