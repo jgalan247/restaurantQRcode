@@ -14,12 +14,14 @@ import { paymentService } from '../services/paymentService';
 import { PaymentMethod } from '../types/payment';
 import { LoadingSpinner } from '../components/layout/LoadingSpinner';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 type Step = 'payment-method' | 'payment-details' | 'tip' | 'processing';
 
 export function CheckoutPage() {
   const navigate = useNavigate();
   const { state, getCartSubtotal, getGSTAmount, clearCart } = useCart();
+  const { t } = useTranslation();
 
   const [step, setStep] = useState<Step>('tip');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(PaymentMethod.SINGLE);
@@ -96,11 +98,11 @@ export function CheckoutPage() {
 
         // Redirect to CityPay payment page
         if (paymentResponse.payment_url) {
-          toast.success('Redirecting to secure payment page...');
+          toast.success(t('notifications.redirectingToPayment'));
           window.location.href = paymentResponse.payment_url;
           return;
         } else {
-          toast.error('Payment URL not received from payment processor');
+          toast.error(t('notifications.paymentUrlError'));
           setStep('tip');
           return;
         }
@@ -125,11 +127,11 @@ export function CheckoutPage() {
 
       // Clear cart and show success
       clearCart();
-      toast.success('Order placed successfully! Check your email for payment details.');
+      toast.success(t('notifications.orderPlaced'));
       navigate(`/payment-success?order=${order.order_number}&id=${order.id}`);
     } catch (err: any) {
       console.error('Checkout failed:', err);
-      toast.error(err.message || 'Failed to process order. Please try again.');
+      toast.error(err.message || t('notifications.orderError'));
       setStep('tip');
     } finally {
       setLoading(false);
@@ -140,8 +142,8 @@ export function CheckoutPage() {
     return (
       <div className="page-container flex items-center justify-center">
         <div className="content-container text-center">
-          <p className="text-gray-600 mb-4">Your cart is empty</p>
-          <Button onClick={() => navigate('/')}>Back to Menu</Button>
+          <p className="text-gray-600 mb-4">{t('cart.empty')}</p>
+          <Button onClick={() => navigate('/')}>{t('menu.backToMenu')}</Button>
         </div>
       </div>
     );
@@ -161,7 +163,7 @@ export function CheckoutPage() {
           >
             <ArrowLeft size={24} />
           </button>
-          <h1 className="text-xl font-bold">Checkout</h1>
+          <h1 className="text-xl font-bold">{t('checkout.title')}</h1>
         </div>
       </header>
 
@@ -207,10 +209,10 @@ export function CheckoutPage() {
                 onClick={() => navigate('/')}
                 fullWidth
               >
-                Back to Menu
+                {t('menu.backToMenu')}
               </Button>
               <Button onClick={handleFinalSubmit} fullWidth>
-                Place Order
+                {t('payment.placeOrder')}
               </Button>
             </div>
           </div>

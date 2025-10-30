@@ -5,11 +5,13 @@ import { Button } from '../components/common/Button';
 import { LoadingSpinner } from '../components/layout/LoadingSpinner';
 import { invoiceService, Invoice } from '../services/invoiceService';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 export function InvoicePage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const orderId = searchParams.get('order');
+  const { t } = useTranslation();
 
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [loading, setLoading] = useState(true);
@@ -22,7 +24,7 @@ export function InvoicePage() {
 
   useEffect(() => {
     if (!orderId) {
-      toast.error('No order ID provided');
+      toast.error(t('errors.badRequest'));
       navigate('/');
       return;
     }
@@ -37,7 +39,7 @@ export function InvoicePage() {
       setInvoice(data);
     } catch (error: any) {
       console.error('Failed to load invoice:', error);
-      toast.error('Failed to load invoice');
+      toast.error(t('notifications.invoiceLoadError'));
       navigate('/');
     } finally {
       setLoading(false);
@@ -50,10 +52,10 @@ export function InvoicePage() {
     try {
       setDownloading(true);
       await invoiceService.downloadPdf(parseInt(orderId));
-      toast.success('Invoice downloaded successfully');
+      toast.success(t('notifications.invoiceDownloaded'));
     } catch (error) {
       console.error('Failed to download PDF:', error);
-      toast.error('Failed to download invoice. Please try again.');
+      toast.error(t('notifications.invoiceDownloadError'));
     } finally {
       setDownloading(false);
     }
