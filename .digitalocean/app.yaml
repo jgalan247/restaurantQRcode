@@ -10,7 +10,6 @@ databases:
 
 services:
   - name: backend
-    type: web
     source_dir: backend
     github:
       branch: main
@@ -39,20 +38,30 @@ services:
         value: "0.05"
       - key: CURRENCY
         value: GBP
+      - key: CITYPAY_BASE_URL
+        value: https://secure.citypay.com
+      - key: MAIL_SERVER
+        value: smtp.sendgrid.net
+      - key: MAIL_PORT
+        value: "587"
+      - key: MAIL_FROM
+        value: noreply@lahacienda.co.uk
 
-static_sites:
   - name: frontend
     source_dir: frontend
     github:
       branch: main
       deploy_on_push: true
       repo: jgalan247/restaurantQRcode
-    build_command: npm install && npm run build
+    build_command: rm -rf node_modules dist && npm install && npm run build
     output_dir: dist
     error_document: index.html
     routes:
       - path: /
     envs:
+      - key: VITE_API_URL
+        scope: BUILD_TIME
+        value: https://seahorse-app-zxz5f.ondigitalocean.app/api/v1
       - key: VITE_APP_NAME
         scope: BUILD_TIME
         value: La Hacienda
