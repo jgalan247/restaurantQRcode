@@ -10,6 +10,7 @@ databases:
 
 services:
   - name: backend
+    type: web
     source_dir: backend
     github:
       branch: main
@@ -39,6 +40,7 @@ services:
       - key: CURRENCY
         value: GBP
 
+static_sites:
   - name: frontend
     source_dir: frontend
     github:

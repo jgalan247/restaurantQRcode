@@ -1,3 +1,6 @@
+# Digital Ocean App Platform Specification
+# This file defines the monorepo structure with backend and frontend components
+
 name: lahacienda-ordering
 region: lon
 
@@ -10,6 +13,7 @@ databases:
 
 services:
   - name: backend
+    type: web
     source_dir: backend
     github:
       branch: main
@@ -46,17 +50,10 @@ services:
         value: "587"
       - key: MAIL_FROM
         value: noreply@lahacienda.co.uk
-      - key: MAIL_FROM_NAME
-        value: La Hacienda Restaurant
       - key: RESTAURANT_NAME
         value: La Hacienda
-      - key: RESTAURANT_ADDRESS
-        value: "123 Mexican Street, London, UK"
-      - key: RESTAURANT_PHONE
-        value: "+44 20 1234 5678"
-      - key: RESTAURANT_EMAIL
-        value: info@lahacienda.co.uk
 
+static_sites:
   - name: frontend
     source_dir: frontend
     github:
