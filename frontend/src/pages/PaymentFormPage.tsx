@@ -16,10 +16,12 @@ import {
   TEST_CARDS,
 } from '../utils/cardValidation';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 export function PaymentFormPage() {
   const navigate = useNavigate();
   const { state, getCartSubtotal, getGSTAmount, getCartTotal, clearCart } = useCart();
+  const { t } = useTranslation();
 
   // Card form state
   const [cardNumber, setCardNumber] = useState('');
@@ -76,7 +78,7 @@ export function PaymentFormPage() {
 
     if (hasValidationErrors(validationErrors)) {
       setErrors(validationErrors);
-      toast.error('Please fix the errors in the form');
+      toast.error(t('notifications.formErrors'));
       return;
     }
 
@@ -120,16 +122,16 @@ export function PaymentFormPage() {
         clearCart();
 
         // Show success message
-        toast.success('Payment successful!');
+        toast.success(t('notifications.paymentSuccess'));
 
         // Redirect to invoice page
         navigate(`/invoice?order=${order.id}`);
       } else {
-        throw new Error('Payment failed');
+        throw new Error(t('notifications.paymentFailed'));
       }
     } catch (err: any) {
       console.error('Payment failed:', err);
-      toast.error(err.message || 'Payment failed. Please try again.');
+      toast.error(err.message || t('notifications.paymentFailed'));
     } finally {
       setProcessing(false);
     }
@@ -140,8 +142,8 @@ export function PaymentFormPage() {
     return (
       <div className="page-container flex items-center justify-center">
         <div className="content-container text-center">
-          <p className="text-gray-600 mb-4">Your cart is empty</p>
-          <Button onClick={() => navigate('/')}>Back to Menu</Button>
+          <p className="text-gray-600 mb-4">{t('cart.empty')}</p>
+          <Button onClick={() => navigate('/')}>{t('menu.backToMenu')}</Button>
         </div>
       </div>
     );
@@ -161,7 +163,7 @@ export function PaymentFormPage() {
           >
             <ArrowLeft size={24} />
           </button>
-          <h1 className="text-xl font-bold">Payment</h1>
+          <h1 className="text-xl font-bold">{t('payment.title')}</h1>
         </div>
       </header>
 
@@ -171,7 +173,7 @@ export function PaymentFormPage() {
           <div className="card">
             <div className="flex items-center gap-2 mb-4">
               <CreditCard className="text-primary" size={24} />
-              <h2 className="text-xl font-bold">Card Details</h2>
+              <h2 className="text-xl font-bold">{t('payment.cardDetails')}</h2>
             </div>
 
             {/* Test Mode Banner */}
@@ -179,7 +181,7 @@ export function PaymentFormPage() {
               <div className="flex items-start gap-2">
                 <Info className="text-blue-600 mt-0.5" size={18} />
                 <div className="text-sm text-blue-900">
-                  <p className="font-semibold mb-1">Test Mode</p>
+                  <p className="font-semibold mb-1">{t('payment.testMode')}</p>
                   <p className="text-blue-700">
                     Use any 16-digit number (e.g., {TEST_CARDS.visa})
                   </p>
@@ -192,13 +194,13 @@ export function PaymentFormPage() {
               {/* Card Number */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Card Number *
+                  {t('payment.cardNumber')} *
                 </label>
                 <input
                   type="text"
                   value={cardNumber}
                   onChange={handleCardNumberChange}
-                  placeholder="1234 5678 9012 3456"
+                  placeholder={t('payment.cardNumberPlaceholder')}
                   className={`input-field ${errors.cardNumber ? 'border-red-500' : ''}`}
                   maxLength={19} // 16 digits + 3 spaces
                   autoComplete="cc-number"
@@ -212,13 +214,13 @@ export function PaymentFormPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Expiry Date *
+                    {t('payment.expiryDate')} *
                   </label>
                   <input
                     type="text"
                     value={expiryDate}
                     onChange={handleExpiryDateChange}
-                    placeholder="MM/YY"
+                    placeholder={t('payment.expiryPlaceholder')}
                     className={`input-field ${errors.expiryDate ? 'border-red-500' : ''}`}
                     maxLength={5} // MM/YY
                     autoComplete="cc-exp"
@@ -229,12 +231,12 @@ export function PaymentFormPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">CVV *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('payment.cvv')} *</label>
                   <input
                     type="text"
                     value={cvv}
                     onChange={handleCvvChange}
-                    placeholder="123"
+                    placeholder={t('payment.cvvPlaceholder')}
                     className={`input-field ${errors.cvv ? 'border-red-500' : ''}`}
                     maxLength={3}
                     autoComplete="cc-csc"
@@ -246,13 +248,13 @@ export function PaymentFormPage() {
               {/* Cardholder Name */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Cardholder Name (optional for testing)
+                  {t('payment.cardholderName')}
                 </label>
                 <input
                   type="text"
                   value={cardholderName}
                   onChange={handleCardholderNameChange}
-                  placeholder="John Doe"
+                  placeholder={t('payment.namePlaceholder')}
                   className={`input-field ${errors.cardholderName ? 'border-red-500' : ''}`}
                   autoComplete="cc-name"
                 />
@@ -262,19 +264,19 @@ export function PaymentFormPage() {
               </div>
 
               <Button type="submit" fullWidth disabled={processing}>
-                {processing ? 'Processing...' : `Pay £${total.toFixed(2)}`}
+                {processing ? t('common.processing') : t('payment.payAmount', { amount: total.toFixed(2) })}
               </Button>
             </form>
           </div>
 
           {/* Order Summary */}
           <div className="card">
-            <h2 className="text-xl font-bold mb-4">Order Summary</h2>
+            <h2 className="text-xl font-bold mb-4">{t('payment.orderSummary')}</h2>
 
             {/* Table Number */}
             <div className="bg-gray-50 rounded-lg p-3 mb-4">
-              <p className="text-sm text-gray-600">Table Number</p>
-              <p className="text-lg font-semibold text-gray-900">Table {state.tableNumber}</p>
+              <p className="text-sm text-gray-600">{t('checkout.title')}</p>
+              <p className="text-lg font-semibold text-gray-900">{t('invoice.table', { number: state.tableNumber })}</p>
             </div>
 
             {/* Items */}
