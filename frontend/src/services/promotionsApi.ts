@@ -1,7 +1,8 @@
 import axios from 'axios';
+import { API_URL } from '../config/api.config';
 import type { Special, Offer } from '../types/admin';
 
-const API_BASE = 'http://localhost:8000/api/v1';
+const API_BASE = API_URL;
 
 export const promotionsApi = {
   // Specials

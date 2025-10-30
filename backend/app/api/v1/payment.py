@@ -4,10 +4,13 @@ from sqlalchemy import select
 from datetime import datetime
 from decimal import Decimal
 import secrets
+import logging
 
 from app.api.deps import get_db
+
+logger = logging.getLogger(__name__)
 from app.schemas.order import SplitEqualRequest, SplitByItemsRequest, PaymentSplitResponse
-from app.services.payment_service import CityPayService
+from app.services.citypay_paylink_service import CityPayPaylinkService
 from app.services.citypay_service import CityPayService as MockCityPayService
 from app.services.email_service import send_payment_link_email
 from app.models.payment import PaymentSplit
@@ -17,6 +20,61 @@ from pydantic import BaseModel
 
 router = APIRouter()
 settings = get_settings()
+
+
+@router.get("/test-citypay")
+async def test_citypay_connection():
+    """
+    Test CityPay API connection and credentials
+    Returns configuration info (without sensitive data)
+    """
+    import httpx
+
+    citypay = CityPayPaylinkService()
+
+    # Get server's outbound IP address from multiple sources
+    outbound_ips = {}
+
+    # Try ipify
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get("https://api.ipify.org?format=json", timeout=5.0)
+            if response.status_code == 200:
+                outbound_ips["ipify"] = response.json().get("ip", "unknown")
+    except:
+        outbound_ips["ipify"] = "error"
+
+    # Try ifconfig.me
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get("https://ifconfig.me/ip", timeout=5.0)
+            if response.status_code == 200:
+                outbound_ips["ifconfig_me"] = response.text.strip()
+    except:
+        outbound_ips["ifconfig_me"] = "error"
+
+    # Try icanhazip
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get("https://icanhazip.com", timeout=5.0)
+            if response.status_code == 200:
+                outbound_ips["icanhazip"] = response.text.strip()
+    except:
+        outbound_ips["icanhazip"] = "error"
+
+    return {
+        "citypay_base_url": citypay.configuration.host,
+        "merchant_id": str(citypay.merchant_id),
+        "merchant_id_preview": str(citypay.merchant_id)[:4] + "****" if len(str(citypay.merchant_id)) > 4 else "****",
+        "licence_key_set": bool(citypay.configuration.api_key.get("cp-api-key")),
+        "currency": settings.CURRENCY,
+        "frontend_url": settings.FRONTEND_URL,
+        "server_outbound_ips": outbound_ips,
+        "integration_type": "PayLink (Official SDK)",
+        "sdk_version": "citypay-api-client",
+        "status": "Configuration loaded - ready to create PayLinks",
+        "note": "Using official CityPay SDK with PayLink hosted pages"
+    }
 
 
 class MockPaymentRequest(BaseModel):
@@ -100,6 +158,110 @@ async def mock_single_payment(
     }
 
 
+@router.post("/process-single/{order_id}")
+async def process_single_payment(
+    order_id: int,
+    payment_data: MockPaymentRequest,
+    background_tasks: BackgroundTasks,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Process single payment using real CityPay integration
+
+    This endpoint creates a CityPay payment intent and returns a payment URL
+    where the customer will be redirected to complete payment on CityPay's
+    secure payment page.
+    """
+
+    # Get order
+    order = await db.get(Order, order_id)
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    if order.status == "paid":
+        raise HTTPException(status_code=400, detail="Order already paid")
+
+    # Calculate tip and total
+    tip = order.subtotal * Decimal(str(payment_data.tip_percentage / 100))
+    total_with_tip = order.subtotal + order.gst_amount + tip
+
+    # Update order with tip and totals
+    order.tip_amount = tip
+    order.total_amount = total_with_tip
+    order.status = "pending_payment"
+
+    # Generate unique split token for this payment
+    split_token = secrets.token_urlsafe(32)
+
+    # Create payment split record
+    payment_split = PaymentSplit(
+        order_id=order_id,
+        split_token=split_token,
+        customer_name=payment_data.cardholder_name,
+        customer_email="",  # Email optional for single payment
+        amount_to_pay=total_with_tip,
+        payment_status="pending",
+        payment_method="card",
+    )
+    db.add(payment_split)
+    await db.flush()
+
+    # Create CityPay PayLink using official SDK
+    citypay = CityPayPaylinkService()
+    try:
+        logger.info(f"🔵 Creating PayLink for order {order.id}")
+        logger.info(f"   Split token: {split_token}")
+        logger.info(f"   Amount: £{total_with_tip}")
+
+        # Create PayLink token
+        paylink_result = citypay.create_paylink_token(
+            amount=total_with_tip,
+            order_id=order.order_number,
+            customer_email="guest@lahacienda.com",  # Default email
+            customer_name=payment_data.cardholder_name,
+            order_description=f"La Hacienda Order {order.order_number}",
+            split_token=split_token,
+        )
+
+        logger.info(f"✅ PayLink created successfully")
+        logger.info(f"   PayLink token: {paylink_result.get('token')}")
+        logger.info(f"   Payment URL: {paylink_result.get('url')}")
+
+        # Store PayLink token for tracking
+        payment_split.payment_provider_id = paylink_result.get("token")
+
+        # Get payment URL from PayLink response
+        payment_url = paylink_result.get("url")
+
+        if not payment_url:
+            raise ValueError("CityPay did not return a payment URL")
+
+        await db.commit()
+
+        logger.info(f"✅ PayLink created for order {order.id}: {payment_url}")
+
+        return {
+            "message": "PayLink created successfully",
+            "order_id": order.id,
+            "order_number": order.order_number,
+            "total_amount": float(total_with_tip),
+            "payment_url": payment_url,
+            "paylink_token": paylink_result.get("token"),
+            "split_token": split_token,
+            "status": "pending_payment",
+            "integration_type": "CityPay PayLink (Official SDK)",
+            "note": "Redirect customer to payment_url - they will enter card details on CityPay's secure page"
+        }
+
+    except Exception as e:
+        await db.rollback()
+        logger.error(f"❌ Failed to create PayLink: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to create payment link: {str(e)}"
+        )
+
+
 @router.post("/split-equal/{order_id}")
 async def split_payment_equally(
     order_id: int,
@@ -126,7 +288,7 @@ async def split_payment_equally(
 
     # Create payment splits
     payment_links = []
-    citypay = CityPayService()
+    citypay = CityPayPaylinkService()
 
     for i, email in enumerate(split_data.emails):
         split_token = secrets.token_urlsafe(32)
@@ -142,18 +304,20 @@ async def split_payment_equally(
         db.add(payment_split)
         await db.flush()
 
-        # Create CityPay payment intent
-        payment_intent = await citypay.create_payment_intent(
+        # Create CityPay PayLink
+        paylink_result = citypay.create_paylink_token(
             amount=amount_per_person,
-            order_number=order.order_number,
+            order_id=f"{order.order_number}-SPLIT{i+1}",
             customer_email=email,
+            customer_name=f"Guest {i+1}",
+            order_description=f"La Hacienda Order {order.order_number} (Split {i+1}/{split_data.people_count})",
             split_token=split_token,
         )
 
-        payment_split.payment_provider_id = payment_intent.get("identifier")
+        payment_split.payment_provider_id = paylink_result.get("token")
 
         # Send email with payment link
-        payment_url = payment_intent.get("redirect_url", f"{settings.FRONTEND_URL}/payment/{split_token}")
+        payment_url = paylink_result.get("url")
         background_tasks.add_task(
             send_payment_link_email,
             email=email,
@@ -198,9 +362,9 @@ async def split_payment_by_items(
     order.status = "pending_payment"
 
     payment_links = []
-    citypay = CityPayService()
+    citypay = CityPayPaylinkService()
 
-    for split_request in split_data.splits:
+    for idx, split_request in enumerate(split_data.splits, 1):
         split_token = secrets.token_urlsafe(32)
 
         # Add proportional tip and tax
@@ -223,18 +387,20 @@ async def split_payment_by_items(
         db.add(payment_split)
         await db.flush()
 
-        # Create payment intent
-        payment_intent = await citypay.create_payment_intent(
+        # Create PayLink
+        paylink_result = citypay.create_paylink_token(
             amount=total_amount,
-            order_number=order.order_number,
+            order_id=f"{order.order_number}-ITEM{idx}",
             customer_email=split_request.customer_email,
+            customer_name=split_request.customer_name,
+            order_description=f"La Hacienda Order {order.order_number} (Items Split {idx})",
             split_token=split_token,
         )
 
-        payment_split.payment_provider_id = payment_intent.get("identifier")
+        payment_split.payment_provider_id = paylink_result.get("token")
 
         # Send email
-        payment_url = payment_intent.get("redirect_url", f"{settings.FRONTEND_URL}/payment/{split_token}")
+        payment_url = paylink_result.get("url")
         background_tasks.add_task(
             send_payment_link_email,
             email=split_request.customer_email,
@@ -267,8 +433,8 @@ async def verify_payment(split_token: str, transaction_id: str, db: AsyncSession
     if not payment_split:
         raise HTTPException(status_code=404, detail="Payment split not found")
 
-    # Verify with CityPay
-    citypay = CityPayService()
+    # Verify with CityPay PayLink
+    citypay = CityPayPaylinkService()
     payment_status = await citypay.verify_payment(transaction_id)
 
     if payment_status.get("status") == "approved":
@@ -307,3 +473,102 @@ async def get_payment_split(split_token: str, db: AsyncSession = Depends(get_db)
         raise HTTPException(status_code=404, detail="Payment split not found")
 
     return payment_split
+
+
+# Payment callback endpoints to handle CityPay redirects
+from fastapi.responses import RedirectResponse
+from fastapi import Request
+
+@router.api_route("/callback/success", methods=["GET", "POST"])
+async def payment_callback_success(request: Request, token: str = None, db: AsyncSession = Depends(get_db)):
+    """
+    Handle CityPay payment success callback (accepts both GET and POST)
+    CityPay may POST data after 3DS authentication
+    """
+    logger.info(f"🔵 Payment success callback received")
+    logger.info(f"   Method: {request.method}")
+    logger.info(f"   Token from query param: {token}")
+    logger.info(f"   Full URL: {str(request.url)}")
+    logger.info(f"   Query params dict: {dict(request.query_params)}")
+    logger.info(f"   Headers: {dict(request.headers)}")
+
+    # If token provided, look up the order and redirect to invoice
+    if token:
+        logger.info(f"🔍 Looking up PaymentSplit with token: {token}")
+        try:
+            # Eagerly load the order and payment_splits relationship
+            from sqlalchemy.orm import selectinload
+            result = await db.execute(
+                select(PaymentSplit)
+                .options(selectinload(PaymentSplit.order).selectinload(Order.payment_splits))
+                .where(PaymentSplit.split_token == token)
+            )
+            payment_split = result.scalar_one_or_none()
+
+            if payment_split:
+                logger.info(f"✅ Found PaymentSplit for order {payment_split.order_id}")
+
+                # Mark payment as completed
+                payment_split.payment_status = "completed"
+                payment_split.paid_at = datetime.now()
+
+                # Check if all splits for this order are paid
+                order = payment_split.order
+                all_paid = all(s.payment_status == "completed" for s in order.payment_splits)
+
+                logger.info(f"   Total splits: {len(order.payment_splits)}")
+                logger.info(f"   All paid: {all_paid}")
+
+                if all_paid:
+                    order.status = "paid"
+                    order.completed_at = datetime.now()
+                    logger.info(f"   ✅ Order marked as paid")
+
+                await db.commit()
+
+                # Redirect to invoice page with order ID (using hash router format)
+                frontend_url = f"{settings.FRONTEND_URL}/#/invoice?order={payment_split.order_id}"
+                logger.info(f"🔄 Redirecting to invoice: {frontend_url}")
+                return RedirectResponse(url=frontend_url, status_code=303)
+            else:
+                logger.warning(f"⚠️  PaymentSplit not found for token: {token}")
+        except Exception as e:
+            logger.error(f"❌ Error processing payment callback: {e}")
+            logger.exception(e)
+            await db.rollback()
+    else:
+        logger.warning(f"⚠️  No token provided in callback")
+
+    # Fallback: Redirect to homepage with success parameter
+    frontend_url = f"{settings.FRONTEND_URL}/?payment=success"
+    if token:
+        frontend_url += f"&token={token}"
+
+    logger.info(f"🔄 Fallback redirect to: {frontend_url}")
+    return RedirectResponse(url=frontend_url, status_code=303)
+
+
+@router.api_route("/callback/failure", methods=["GET", "POST"])
+async def payment_callback_failure(request: Request, token: str = None):
+    """
+    Handle CityPay payment failure callback (accepts both GET and POST)
+    """
+    logger.info(f"Payment failure callback received - Method: {request.method}, Token: {token}")
+
+    # Redirect to homepage with failure parameter
+    frontend_url = f"{settings.FRONTEND_URL}/?payment=failure"
+    if token:
+        frontend_url += f"&token={token}"
+
+    return RedirectResponse(url=frontend_url, status_code=303)
+
+
+@router.api_route("/callback/cancel", methods=["GET", "POST"])
+async def payment_callback_cancel(request: Request):
+    """
+    Handle CityPay payment cancellation callback (accepts both GET and POST)
+    """
+    logger.info(f"Payment cancel callback received - Method: {request.method}")
+
+    # Redirect to frontend checkout page
+    return RedirectResponse(url=f"{settings.FRONTEND_URL}/checkout", status_code=303)

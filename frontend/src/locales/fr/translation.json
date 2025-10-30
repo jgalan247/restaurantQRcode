@@ -1,0 +1,182 @@
+{
+  "common": {
+    "back": "Retour",
+    "close": "Fermer",
+    "continue": "Continuer",
+    "loading": "Chargement...",
+    "processing": "Traitement...",
+    "downloading": "Téléchargement...",
+    "currency": "£"
+  },
+  "header": {
+    "siteName": "La Hacienda"
+  },
+  "menu": {
+    "title": "Notre Menu",
+    "subtitle": "Cuisine mexicaine authentique préparée avec des ingrédients frais",
+    "addToCart": "Ajouter au Panier",
+    "unavailable": "Indisponible",
+    "customize": "Personnalisez votre commande",
+    "addExtras": "Ajouter des extras",
+    "quantity": "Quantité",
+    "allergenInfo": "Info Allergènes",
+    "showing": "Affichage de {{count}} sur {{total}} articles",
+    "noResults": "Aucun article ne correspond à vos filtres.",
+    "backToMenu": "Retour au Menu"
+  },
+  "filters": {
+    "title": "Filtres",
+    "clearAll": "Effacer tous les filtres",
+    "dietary": "Préférences Alimentaires",
+    "spiceLevel": "Niveau d'Épices",
+    "specialCategories": "Catégories Spéciales",
+    "priceRange": "Gamme de Prix",
+    "allergenFilters": "Filtres d'Allergènes",
+    "excludeAllergens": "Exclure ces allergènes (afficher les articles SANS)",
+    "showOnlyAllergens": "Afficher uniquement les articles avec ces allergènes",
+    "specialsOnly": "Spéciaux Seulement",
+    "offersOnly": "Offres Seulement",
+    "search": "Rechercher dans le menu..."
+  },
+  "dietary": {
+    "all": "Tout",
+    "vegetarian": "🥬 Végétarien",
+    "vegan": "🌱 Végétalien"
+  },
+  "spice": {
+    "mild": "Doux",
+    "medium": "Moyen",
+    "hot": "Épicé",
+    "extraHot": "Très Épicé"
+  },
+  "categories": {
+    "kidsMenu": "👶 Menu Enfants",
+    "salads": "🥗 Salades",
+    "deals": "💰 Offres",
+    "glutenFree": "🌾 Sans Gluten"
+  },
+  "priceRanges": {
+    "all": "Tous les Prix",
+    "under10": "Moins de £10",
+    "10to15": "£10-£15",
+    "15to20": "£15-£20",
+    "over20": "Plus de £20"
+  },
+  "allergens": {
+    "celery": "Céleri",
+    "gluten": "Gluten",
+    "crustaceans": "Crustacés",
+    "eggs": "Œufs",
+    "fish": "Poisson",
+    "lupin": "Lupin",
+    "milk": "Lait",
+    "molluscs": "Mollusques",
+    "mustard": "Moutarde",
+    "nuts": "Fruits à Coque",
+    "peanuts": "Arachides",
+    "sesame": "Sésame",
+    "soya": "Soja",
+    "sulphites": "Sulfites"
+  },
+  "variants": {
+    "smallGlass": "Petit Verre (125ml)",
+    "largeGlass": "Grand Verre (250ml)",
+    "bottle": "Bouteille (750ml)"
+  },
+  "cart": {
+    "title": "Votre Panier",
+    "empty": "Le panier est vide",
+    "emptyCart": "Vider le Panier",
+    "subtotal": "Sous-total",
+    "gst": "TVA (5%)",
+    "total": "Total",
+    "proceedToCheckout": "Passer à la Caisse",
+    "continueShopping": "Continuer vos Achats",
+    "addedToCart": "{{quantity}}x {{name}} ajouté au panier"
+  },
+  "checkout": {
+    "title": "Caisse",
+    "numberOfPeople": "Nombre de Personnes",
+    "emailAddresses": "Adresses Email",
+    "personEmail": "Email Personne {{number}}",
+    "choosePaymentMethod": "Choisir le Mode de Paiement",
+    "payFull": "Payer le Montant Total",
+    "payFullDesc": "Une personne paie la totalité de l'addition",
+    "splitEqually": "Partager Également",
+    "splitEquallyDesc": "Diviser l'addition également entre les personnes",
+    "splitByItems": "Partager par Articles",
+    "splitByItemsDesc": "Chaque personne paie ses propres articles"
+  },
+  "payment": {
+    "title": "Paiement",
+    "cardDetails": "Détails de la Carte",
+    "cardNumber": "Numéro de Carte",
+    "expiryDate": "Date d'Expiration",
+    "cvv": "CVV",
+    "cardholderName": "Nom du Titulaire (optionnel pour les tests)",
+    "addTip": "Ajouter un Pourboire (optionnel)",
+    "noTip": "Pas de Pourboire",
+    "customTip": "Montant du pourboire personnalisé",
+    "specialInstructions": "Instructions Spéciales (optionnel)",
+    "placeOrder": "Passer la Commande",
+    "payAmount": "Payer £{{amount}}",
+    "testMode": "Mode Test",
+    "orderSummary": "Résumé de la Commande",
+    "cardNumberPlaceholder": "1234 5678 9012 3456",
+    "expiryPlaceholder": "MM/AA",
+    "cvvPlaceholder": "123",
+    "namePlaceholder": "Jean Dupont",
+    "instructionsPlaceholder": "par ex., Pas d'oignons, sauce supplémentaire..."
+  },
+  "paymentSuccess": {
+    "title": "Commande Passée avec Succès!",
+    "orderNumber": "Numéro de Commande: {{number}}",
+    "paymentDetailsSent": "Détails de Paiement Envoyés",
+    "instructions": "Nous avons envoyé les instructions de paiement à l'adresse email que vous avez fournie. Veuillez vérifier votre boîte de réception et compléter le paiement pour confirmer votre commande.",
+    "thankYou": "Votre commande sera préparée une fois le paiement confirmé. Merci de dîner avec nous!",
+    "viewInvoice": "Voir la Facture",
+    "returnToMenu": "Retour au Menu"
+  },
+  "paymentFailure": {
+    "title": "Échec du Paiement",
+    "message": "Nous avons rencontré un problème lors du traitement de votre paiement. Veuillez réessayer ou contacter notre personnel pour assistance.",
+    "tryAgain": "Réessayer"
+  },
+  "invoice": {
+    "title": "Facture",
+    "downloadPdf": "Télécharger PDF",
+    "table": "Table {{number}}"
+  },
+  "allergenWarning": {
+    "title": "Information sur les Allergènes",
+    "important": "Important: Si vous avez une allergie ou une intolérance alimentaire, veuillez parler à un membre du personnel avant de commander. Nous ne pouvons garantir qu'aucun plat ne soit complètement exempt d'allergènes.",
+    "majorAllergens": "14 Allergènes Majeurs (Loi britannique):",
+    "crossContamination": "Contamination croisée: Notre cuisine manipule les 14 allergènes. Bien que nous prenions toutes les précautions, nous ne pouvons garantir qu'aucun plat ne soit complètement exempt d'allergènes.",
+    "understand": "Je Comprends"
+  },
+  "notifications": {
+    "paymentSuccess": "Paiement réussi! Merci pour votre commande.",
+    "orderPlaced": "Commande passée avec succès! Vérifiez votre email pour les détails de paiement.",
+    "menuLoadError": "Échec du chargement du menu. Veuillez réessayer.",
+    "paymentUrlError": "URL de paiement non reçue du processeur de paiement",
+    "orderError": "Échec du traitement de la commande. Veuillez réessayer.",
+    "formErrors": "Veuillez corriger les erreurs dans le formulaire",
+    "paymentFailed": "Échec du paiement. Veuillez réessayer.",
+    "invoiceLoadError": "Échec du chargement de la facture",
+    "invoiceDownloadError": "Échec du téléchargement de la facture. Veuillez réessayer.",
+    "redirectingToPayment": "Redirection vers la page de paiement sécurisée...",
+    "invoiceDownloaded": "Facture téléchargée avec succès"
+  },
+  "validation": {
+    "emailRequired": "L'email est requis",
+    "emailInvalid": "Format d'email invalide",
+    "itemNameRequired": "Le nom de l'article est requis",
+    "priceRequired": "Un prix valide est requis"
+  },
+  "errors": {
+    "notFound": "Ressource non trouvée",
+    "badRequest": "Requête incorrecte",
+    "serverError": "Erreur serveur. Veuillez réessayer plus tard.",
+    "networkError": "Erreur réseau. Veuillez vérifier votre connexion."
+  }
+}

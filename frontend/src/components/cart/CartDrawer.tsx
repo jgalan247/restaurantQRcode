@@ -5,6 +5,7 @@ import { CartItem } from './CartItem';
 import { CartSummary } from './CartSummary';
 import { Button } from '../common/Button';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -13,6 +14,7 @@ interface CartDrawerProps {
 
 export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { state, updateQuantity, removeItem, getCartSubtotal, getGSTAmount, getCartTotal } =
     useCart();
 
@@ -29,7 +31,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
   const handleCheckout = () => {
     onClose();
-    navigate('/payment');
+    navigate('/checkout');
   };
 
   if (!isOpen) return null;
@@ -43,7 +45,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
       <div className="glass-panel fixed right-0 top-0 h-full w-full max-w-md shadow-2xl flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <h2 className="text-xl font-bold text-gray-900">Your Cart</h2>
+          <h2 className="text-xl font-bold text-gray-900">{t('cart.title')}</h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -57,8 +59,8 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           {state.items.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-gray-400">
               <ShoppingBag size={64} className="mb-4" />
-              <p className="text-lg">Your cart is empty</p>
-              <p className="text-sm mt-1">Add items from the menu to get started</p>
+              <p className="text-lg">{t('cart.empty')}</p>
+              <p className="text-sm mt-1">{t('cart.continueShopping')}</p>
             </div>
           ) : (
             <div>
@@ -84,7 +86,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               total={getCartTotal()}
             />
             <Button fullWidth onClick={handleCheckout}>
-              Proceed to Checkout
+              {t('cart.proceedToCheckout')}
             </Button>
           </div>
         )}

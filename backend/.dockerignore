@@ -1,0 +1,27 @@
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info
+dist
+build
+.env
+.venv
+venv/
+ENV/
+.git
+.gitignore
+.pytest_cache
+.mypy_cache
+.coverage
+htmlcov/
+*.log
+.DS_Store
+
+# IMPORTANT: Do NOT ignore these - they're needed for deployment
+# data/
+# static/
+# alembic/
