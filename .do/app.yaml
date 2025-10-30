@@ -85,12 +85,13 @@ services:
         value: La Hacienda Restaurant
 
   - name: frontend
+    type: static
     source_dir: frontend
     github:
       branch: main
       deploy_on_push: true
-    build_command: rm -rf node_modules dist && npm install && npm run build
-    output_dir: dist
+    dockerfile_path: Dockerfile
+    output_dir: /app/dist
     error_document: index.html
     routes:
       - path: /
