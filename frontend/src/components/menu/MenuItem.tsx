@@ -11,10 +11,10 @@ interface MenuItemProps {
 
 export function MenuItem({ item, onClick }: MenuItemProps) {
   // Convert dietary_tags array to boolean flags
-  const isVegetarian = item.dietary_tags.includes('v');
-  const isVegan = item.dietary_tags.includes('vg');
-  const isGlutenFree = item.dietary_tags.includes('gluten_free') || item.is_gluten_free;
-  // const isSpicy = item.dietary_tags.includes('spicy') || !!item.spice_level;  // Unused
+  const isVegetarian = item.dietary_tags?.includes('v') || false;
+  const isVegan = item.dietary_tags?.includes('vg') || false;
+  const isGlutenFree = item.dietary_tags?.includes('gluten_free') || item.is_gluten_free;
+  // const isSpicy = item.dietary_tags?.includes('spicy') || !!item.spice_level;  // Unused
 
   const getChiliCount = (level?: string): number => {
     switch (level) {

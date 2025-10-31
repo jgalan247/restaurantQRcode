@@ -36,10 +36,10 @@ export function MenuItemModal({ item, isOpen, onClose }: MenuItemModalProps) {
   }
 
   // Convert dietary_tags array to boolean flags
-  const isVegetarian = item.dietary_tags.includes('vegetarian');
-  const isVegan = item.dietary_tags.includes('vegan');
-  const isGlutenFree = item.dietary_tags.includes('gluten_free');
-  const isSpicy = item.dietary_tags.includes('spicy');
+  const isVegetarian = item.dietary_tags?.includes('vegetarian') || false;
+  const isVegan = item.dietary_tags?.includes('vegan') || false;
+  const isGlutenFree = item.dietary_tags?.includes('gluten_free') || false;
+  const isSpicy = item.dietary_tags?.includes('spicy') || false;
 
   const handleModifierToggle = (modifier: CartItemModifier) => {
     setSelectedModifiers((prev) => {

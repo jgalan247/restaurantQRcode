@@ -35,10 +35,10 @@ export function useMenuFilters(
       }
       // Dietary filter
       if (!filters.dietary.includes('all')) {
-        if (filters.dietary.includes('vegetarian') && !item.dietary_tags.includes('v')) {
+        if (filters.dietary.includes('vegetarian') && !item.dietary_tags?.includes('v')) {
           return false;
         }
-        if (filters.dietary.includes('vegan') && !item.dietary_tags.includes('vg')) {
+        if (filters.dietary.includes('vegan') && !item.dietary_tags?.includes('vg')) {
           return false;
         }
       }
