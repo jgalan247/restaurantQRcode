@@ -26,12 +26,17 @@ if ssl_required:
     # asyncpg expects ssl='require' instead of sslmode=require
     connect_args["ssl"] = "require"
 
-# Create async engine
+# Create async engine with connection pool health checks
 engine = create_async_engine(
     database_url,
     echo=settings.DEBUG,
     future=True,
-    connect_args=connect_args
+    connect_args=connect_args,
+    # Connection pool settings to prevent "connection is closed" errors
+    pool_pre_ping=True,  # Test connections before using them from the pool
+    pool_recycle=3600,   # Recycle connections after 1 hour (3600 seconds)
+    pool_size=10,        # Number of connections to maintain in the pool
+    max_overflow=20      # Maximum overflow connections beyond pool_size
 )
 
 # Create async session factory
